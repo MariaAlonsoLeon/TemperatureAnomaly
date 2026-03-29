@@ -5,20 +5,27 @@
 
 ---
 
-### Study overview
+## Repository contents
 
-This repository contains the materials associated with the study:
+- `AEMET_CONGRESO_CON_RESULTADOS.Rmd` → source of the extended analysis (main contribution)  
+- `AEMET_CONGRESO_CON_RESULTADOS.html` → rendered extended report  
+- `OBS_018.docx` → conference submission (short version, accepted at XIV Congreso AEC 2026)  
+- `anomalia_temperatura_2025.rds` → dataset  
+- `utilidades.R` → helper functions  
+- `dashboard_clima_canarias.rmd` → climate dashboard  
 
-**Análisis de la evolución de la anomalía de temperatura en Canarias entre 1970 y 2024 en el contexto mundial**
+---
 
-The project analyses long-term temperature anomaly trends between **1970 and 2024**, combining **global datasets** with **regional observations from the Canary Islands**.
+## Study overview
 
-It includes:
-- conference paper  
-- extended report  
-- dataset  
-- reproducible analysis code  
-- interactive dashboards  
+This repository presents a **complete and reproducible study** of temperature anomaly trends in the Canary Islands between **1970 and 2024**, analysed in a global context.
+
+**Evolution of Temperature Anomalies in the Canary Islands (1970–2024) in a Global Context**
+
+The project combines **global climate datasets (HadCRUT5)** with **regional observations (AEMET)** and applies a rigorous statistical framework to quantify long-term warming and assess recent trend behaviour.
+
+A **condensed version of this work** has been accepted at the **XIV Congreso AEC (2026)**.  
+The conference paper included in this repository corresponds to a **short version** of the full analysis.
 
 ---
 
@@ -71,18 +78,9 @@ The analysis is performed at three temporal resolutions:
 
 ---
 
-## Contents
-
-- AEMET_CONGRESO_CON_RESULTADOS.Rmd → source of the full analysis
-- AEMET_CONGRESO_CON_RESULTADOS.html → rendered extended report
-- OBS_018.docx → conference submission
-- anomalia_temperatura_2025.rds → dataset
-- utilidades.R → helper functions
-- dashboards → interactive visual exploration
-
----
 ## Reproducibility
-```text
+
+```r
 install.packages(c(
   "tidyverse",
   "ggplot2",
@@ -95,23 +93,28 @@ install.packages(c(
   "kableExtra"
 ))
 ```
-```text
+
+```r
 rmarkdown::render("AEMET_CONGRESO_CON_RESULTADOS.Rmd")
 ```
 ---
-## Data sources
 
-- **HadCRUT5** → global and hemispheric series
-- **AEMET** → Canary Islands observations
+## Data sources
+- HadCRUT5 → global and hemispheric temperature series
+- AEMET → Canary Islands station data
 
 Temperature anomalies are computed relative to the 1961–1990 baseline.
 
 ---
+
 ## Extended version
 
-A detailed version of the study — including full methodology, additional figures and robustness analysis — is available in this repository (HTML report).
+The full study — including detailed methodology, robustness analysis, additional figures and complete results — is available in this repository as an HTML report.
+
+This extended version constitutes the main scientific contribution, while the conference paper provides a condensed summary of the results.
 
 ---
+
 ## License
 
 The code in this repository is distributed under the MIT License.
