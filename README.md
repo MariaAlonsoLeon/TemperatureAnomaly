@@ -6,6 +6,22 @@
 
 ---
 
+![Annual temperature anomaly](figures/main-plot.png)
+
+*Annual mean temperature anomalies (1970–2024) across global, hemispheric and Canary Islands series. Linear trends are shown together with 95% confidence intervals (OLS and HAC Newey-West).*
+
+---
+
+## Key findings
+
+- 🌍 **Consistent warming across all regions (1970–2024)**
+- 🇮🇨 Canary Islands show warming rates **comparable to the Northern Hemisphere**
+- 📈 Linear trends are **statistically robust across all scales**
+- ⚖️ Non-linear models improve fit by **< 2% → linearity holds**
+- 🔍 Evidence of **global acceleration vs possible regional deceleration**
+
+---
+
 ## Contents
 
 - `temperature_anomaly_analysis.Rmd` → **main extended study (source code)**  
@@ -20,30 +36,28 @@
 
 ## Overview
 
-This repository presents a **fully reproducible statistical analysis** of temperature anomaly trends in the Canary Islands between **1970 and 2024**, framed within a **global climate context**.
+This repository presents a **fully reproducible statistical analysis** of temperature anomaly trends in the Canary Islands between **1970 and 2024**, analysed within a **global and hemispheric context**.
 
-The study integrates:
+The study combines:
 
 - **HadCRUT5** → global and hemispheric temperature series  
 - **AEMET** → high-resolution observational data from the Canary Islands  
 
-A **short version of this work** has been accepted at the **XIV Congreso AEC (2026)**.  
-The full HTML report included here constitutes the **extended scientific contribution**.
-
+A **short version of this work** has been accepted at the **XIV Congreso AEC (2026)**, while the HTML report included here represents the **full extended study**.
 ---
 
 ## Scientific contribution
 
-This work aims to answer a key question:
+This work addresses the following question:
 
-> **Are recent temperature trends in the Canary Islands consistent with historical warming patterns and global behaviour?**
+> **Are recent temperature trends in the Canary Islands consistent with historical warming and global behaviour?**
 
 Main contributions:
 
-- rigorous comparison between **global and regional warming trends**
-- evaluation of **trend stability vs recent changes**
-- validation of linear models under **strict statistical diagnostics**
-- assessment of **non-linear alternatives** (segmented regression, transformations)
+- 🌍 Integrated comparison of **global, hemispheric and regional trends**
+- 📊 Full validation of linear models using **rigorous statistical diagnostics**
+- 🔍 Assessment of **recent trend changes** using alternative methodologies
+- ⚖️ Quantification of **non-linearity impact (<2% RMSE improvement)**
 
 ---
 
@@ -93,6 +107,18 @@ All series are analysed consistently across multiple temporal resolutions.
 - Global series suggest **recent acceleration**
 - Canary Islands show **possible recent deceleration**
 - Results are consistent with **high-emission climate scenarios**
+
+---
+
+## Why this matters
+
+Understanding whether regional warming follows global patterns is essential for interpreting climate change at local scales.
+
+This study shows that:
+
+- the Canary Islands are **fully embedded in the global warming signal**
+- regional deviations may exist, but remain **statistically weak**
+- simple statistical models can provide **robust and interpretable insights** comparable to more complex approaches
 
 ---
 
