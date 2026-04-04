@@ -33,8 +33,8 @@
 
 ## Contents
 
-- 📊 `temperature_anomaly_analysis.html` → **full report (recommended reading)**  
-- 🧠 `temperature_anomaly_analysis.Rmd` → source code  
+- 📊 `temperature_anomaly_global_context` → **full report (recommended reading)**  
+- 🧠 `temperature_anomaly_global_context.Rmd` → source code  
 - 📝 `OBS_018.docx` → conference paper (short version)  
 - 📁 `temperature_anomaly_2025.rds` → dataset  
 - ⚙️ `utilities.R` → helper functions  
@@ -156,7 +156,7 @@ install.packages(c(
 Render the full report:
 
 ```r
-rmarkdown::render("temperature_anomaly_analysis.Rmd")
+rmarkdown::render("temperature_anomaly_global_context.Rmd")
 ```
 
 ---
