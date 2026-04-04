@@ -1,36 +1,45 @@
 # Temperature Anomaly Analysis in the Canary Islands (1970–2024)
 
-[![R](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)](https://www.r-project.org/)
-[![Climate Study](https://img.shields.io/badge/Climate-Temperature%20Analysis-1b4965?style=flat-square)](#)
-[![Reproducible Research](https://img.shields.io/badge/Reproducible-Yes-2a9d8f?style=flat-square)](#)
+<p align="center">
+  <img src="https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white">
+  <img src="https://img.shields.io/badge/Climate-Temperature%20Analysis-1b4965?style=flat-square">
+  <img src="https://img.shields.io/badge/Reproducible-Yes-2a9d8f?style=flat-square">
+</p>
 
----
+<br>
 
-![Annual temperature anomaly](figures/main-plot.png)
+<p align="center">
+  <img src="figures/main-plot.png" width="85%">
+</p>
 
-*Annual mean temperature anomalies (1970–2024) across global, hemispheric and Canary Islands series. Linear trends are shown together with 95% confidence intervals (OLS and HAC Newey-West).*
+<p align="center">
+  <i>
+  Annual mean temperature anomalies (1970–2024) across global, hemispheric and Canary Islands series.<br>
+  Linear trends are shown together with 95% confidence intervals (OLS and HAC Newey-West).
+  </i>
+</p>
 
 ---
 
 ## Key findings
 
-- 🌍 **Consistent warming across all regions (1970–2024)**
-- 🇮🇨 Canary Islands show warming rates **comparable to the Northern Hemisphere**
-- 📈 Linear trends are **statistically robust across all scales**
-- ⚖️ Non-linear models improve fit by **< 2% → linearity holds**
-- 🔍 Evidence of **global acceleration vs possible regional deceleration**
+> 🌍 **Consistent warming across all regions (1970–2024)**  
+> 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere**  
+> 📈 Linear trends provide a **robust and stable description**  
+> ⚖️ Non-linear models improve fit by **< 2% → linearity holds**  
+> 🔍 Evidence of **global acceleration vs possible regional deceleration**
 
 ---
 
 ## Contents
 
-- `temperature_anomaly_analysis.Rmd` → **main extended study (source code)**  
-- `temperature_anomaly_analysis.html` → **rendered full report (recommended reading)**  
-- `OBS_018.docx` → **conference paper (short version, XIV Congreso AEC 2026)**  
-- `temperature_anomaly_2025.rds` → dataset  
-- `utilities.R` → helper functions  
-- `dashboard_anomalies_en.html` → interactive dashboard  
-- `*_cache/`, `*_files/` → RMarkdown cache and dependencies  
+- 📊 `temperature_anomaly_analysis.html` → **full report (recommended reading)**  
+- 🧠 `temperature_anomaly_analysis.Rmd` → source code  
+- 📝 `OBS_018.docx` → conference paper (short version)  
+- 📁 `temperature_anomaly_2025.rds` → dataset  
+- ⚙️ `utilities.R` → helper functions  
+- 📈 `dashboard_anomalies_en.html` → interactive dashboard  
+- 🧩 `*_cache/`, `*_files/` → RMarkdown dependencies  
 
 ---
 
@@ -43,7 +52,11 @@ The study combines:
 - **HadCRUT5** → global and hemispheric temperature series  
 - **AEMET** → high-resolution observational data from the Canary Islands  
 
-A **short version of this work** has been accepted at the **XIV Congreso AEC (2026)**, while the HTML report included here represents the **full extended study**.
+The HTML report included in this repository represents the **full extended version** of the study, while a shorter version was prepared for conference submission.
+
+> 📄 **Full report available:**  
+> The complete analysis (methodology, diagnostics and results) is included as an HTML document in this repository.
+
 ---
 
 ## Scientific contribution
@@ -118,7 +131,7 @@ This study shows that:
 
 - the Canary Islands are **fully embedded in the global warming signal**
 - regional deviations may exist, but remain **statistically weak**
-- simple statistical models can provide **robust and interpretable insights** comparable to more complex approaches
+- relatively simple statistical models can provide **robust and interpretable insights** comparable to more complex approaches
 
 ---
 
@@ -138,6 +151,7 @@ install.packages(c(
   "patchwork",
   "kableExtra"
 ))
+```
 
 Render the full report:
 
@@ -154,18 +168,42 @@ rmarkdown::render("temperature_anomaly_analysis.Rmd")
 
 Temperature anomalies are computed relative to the 1961–1990 baseline.
 
----
-
 ### Extended vs conference version
+
 - 📄 HTML report → full methodology, diagnostics, robustness analysis
 - 📝 Conference paper (OBS_018.docx) → condensed version of results
 
 The extended version should be considered the primary reference.
 
----
+### How to cite
+
+If you use this work, please cite:
+
+Alonso León, M., & Álvarez, L. (2026).
+**Temperature anomaly evolution in the Canary Islands in a global context (1970–2024).**
+XIV Congreso AEC.
+
+Extended reproducible version (code and full analysis):
+https://github.com/MariaAlonsoLeon/TemperatureAnomaly
+
+Author
+
+**María Alonso León**
+Data Scientist
+
+- 📧 maria.alonleon6@gmail.com
+- 💼 LinkedIn: your_linkedin_here
+- 🎓 Universidad de Las Palmas de Gran Canaria
+
+Research interests
+
+- Time series analysis
+- Climate data modelling
+- Statistical inference
 
 ### License
-Code → MIT License
-Documentation & figures → CC BY 4.0
+
+- Code → MIT License
+- Documentation & figures → CC BY 4.0
 
 Third-party data (AEMET, HadCRUT5, etc.) remain subject to their respective licenses.
