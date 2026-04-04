@@ -1,4 +1,4 @@
-# Temperature Anomaly Analysis in the Canary Islands (1970–2024)
+# Temperature Anomaly Analysis in the Canary Islands in a Global Context (1970–2024)
 
 <p align="center">
   <img src="https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white">
