@@ -168,12 +168,16 @@ rmarkdown::render("temperature_anomaly_analysis.Rmd")
 
 Temperature anomalies are computed relative to the 1961–1990 baseline.
 
+---
+
 ### Extended vs conference version
 
 - 📄 HTML report → full methodology, diagnostics, robustness analysis
 - 📝 Conference paper (OBS_018.docx) → condensed version of results
 
 The extended version should be considered the primary reference.
+
+---
 
 ### How to cite
 
@@ -186,9 +190,12 @@ XIV Congreso AEC.
 Extended reproducible version (code and full analysis):
 https://github.com/MariaAlonsoLeon/TemperatureAnomaly
 
-Author
+---
+
+### Author
 
 **María Alonso León**
+
 Data Scientist
 
 - 📧 maria.alonleon6@gmail.com
@@ -200,6 +207,8 @@ Research interests
 - Time series analysis
 - Climate data modelling
 - Statistical inference
+
+---
 
 ### License
 
