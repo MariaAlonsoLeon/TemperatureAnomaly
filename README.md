@@ -2,36 +2,54 @@
 
 [![R](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)](https://www.r-project.org/)
 [![Climate Study](https://img.shields.io/badge/Climate-Temperature%20Analysis-1b4965?style=flat-square)](#)
+[![Reproducible Research](https://img.shields.io/badge/Reproducible-Yes-2a9d8f?style=flat-square)](#)
 
 ---
 
-## Repository contents
+## Contents
 
-- `AEMET_CONGRESO_CON_RESULTADOS.Rmd` → source of the extended analysis (main contribution)  
-- `AEMET_CONGRESO_CON_RESULTADOS.html` → rendered extended report  
-- `OBS_018.docx` → conference submission (short version, accepted at XIV Congreso AEC 2026)  
-- `anomalia_temperatura_2025.rds` → dataset  
-- `utilidades.R` → helper functions  
-- `dashboard_clima_canarias.rmd` → climate dashboard  
+- `temperature_anomaly_analysis.Rmd` → **main extended study (source code)**  
+- `temperature_anomaly_analysis.html` → **rendered full report (recommended reading)**  
+- `OBS_018.docx` → **conference paper (short version, XIV Congreso AEC 2026)**  
+- `temperature_anomaly_2025.rds` → dataset  
+- `utilities.R` → helper functions  
+- `dashboard_anomalies_en.html` → interactive dashboard  
+- `*_cache/`, `*_files/` → RMarkdown cache and dependencies  
 
 ---
 
-## Study overview
+## Overview
 
-This repository presents a **complete and reproducible study** of temperature anomaly trends in the Canary Islands between **1970 and 2024**, analysed in a global context.
+This repository presents a **fully reproducible statistical analysis** of temperature anomaly trends in the Canary Islands between **1970 and 2024**, framed within a **global climate context**.
 
-**Evolution of Temperature Anomalies in the Canary Islands (1970–2024) in a Global Context**
+The study integrates:
 
-The project combines **global climate datasets (HadCRUT5)** with **regional observations (AEMET)** and applies a rigorous statistical framework to quantify long-term warming and assess recent trend behaviour.
+- **HadCRUT5** → global and hemispheric temperature series  
+- **AEMET** → high-resolution observational data from the Canary Islands  
 
-A **condensed version of this work** has been accepted at the **XIV Congreso AEC (2026)**.  
-The conference paper included in this repository corresponds to a **short version** of the full analysis.
+A **short version of this work** has been accepted at the **XIV Congreso AEC (2026)**.  
+The full HTML report included here constitutes the **extended scientific contribution**.
+
+---
+
+## Scientific contribution
+
+This work aims to answer a key question:
+
+> **Are recent temperature trends in the Canary Islands consistent with historical warming patterns and global behaviour?**
+
+Main contributions:
+
+- rigorous comparison between **global and regional warming trends**
+- evaluation of **trend stability vs recent changes**
+- validation of linear models under **strict statistical diagnostics**
+- assessment of **non-linear alternatives** (segmented regression, transformations)
 
 ---
 
 ## Study design
 
-The analysis covers eight spatial series:
+The analysis includes **eight spatial series**:
 
 | Scale        | Areas |
 |-------------|------|
@@ -39,46 +57,48 @@ The analysis covers eight spatial series:
 | Regional    | Canary Islands (average) |
 | Stations    | Izaña · Tenerife/Los Rodeos · Santa Cruz de Tenerife · Gran Canaria/Gando |
 
-The objective is to quantify warming trends and evaluate whether **recent behaviour differs from historical trends**.
+All series are analysed consistently across multiple temporal resolutions.
 
 ---
 
-## Methodological framework
+## Methodology
 
-The core model is **ordinary least squares regression (OLS)**, supported by a full diagnostic framework:
+### Core model
+- Ordinary Least Squares (OLS)
 
-- normality → Anderson-Darling  
-- homoscedasticity → Breusch-Pagan  
-- autocorrelation → Ljung-Box  
-- robust inference → HAC (Newey-West)  
-- trend validation → Mann-Kendall + Sen slope  
+### Diagnostic framework
+- Normality → Anderson-Darling  
+- Homoscedasticity → Breusch-Pagan  
+- Autocorrelation → Ljung-Box  
+- Robust inference → HAC (Newey-West)  
+- Trend validation → Mann-Kendall + Sen slope  
 
-To evaluate deviations from linearity:
-
+### Non-linear analysis
 - Yeo-Johnson transformation  
-- segmented regression (changepoint model)  
+- Segmented regression (changepoint detection)
 
-The analysis is performed at three temporal resolutions:
-
-- monthly series  
-- annual averages  
-- month-specific models  
+### Temporal resolutions
+- Monthly series  
+- Annual averages  
+- Month-specific models  
 
 ---
 
-## Key findings
+## Key results
 
-- all regions show statistically significant warming  
-- Canary Islands exhibit warming rates comparable to the Northern Hemisphere  
-- linear regression provides a highly stable description of the trend  
-- alternative models improve RMSE by **less than 2%**  
-- global series indicate a **moderate recent acceleration**  
-- Canary Islands suggest a **possible recent deceleration**  
-- observed trends are consistent with **high-emission climate scenarios**  
+- All analysed regions show **statistically significant warming**
+- Canary Islands warming is **comparable to the Northern Hemisphere**
+- Linear models provide a **robust and stable representation**
+- Non-linear alternatives improve RMSE by **< 2%**
+- Global series suggest **recent acceleration**
+- Canary Islands show **possible recent deceleration**
+- Results are consistent with **high-emission climate scenarios**
 
 ---
 
 ## Reproducibility
+
+Install dependencies:
 
 ```r
 install.packages(c(
@@ -92,35 +112,34 @@ install.packages(c(
   "patchwork",
   "kableExtra"
 ))
-```
+
+Render the full report:
 
 ```r
-rmarkdown::render("AEMET_CONGRESO_CON_RESULTADOS.Rmd")
+rmarkdown::render("temperature_anomaly_analysis.Rmd")
 ```
+
 ---
 
-## Data sources
-- HadCRUT5 → global and hemispheric temperature series
-- AEMET → Canary Islands station data
+### Data sources
+
+- HadCRUT5 → global temperature datasets
+- AEMET → observational station data
 
 Temperature anomalies are computed relative to the 1961–1990 baseline.
 
 ---
 
-## Extended version
+### Extended vs conference version
+- 📄 HTML report → full methodology, diagnostics, robustness analysis
+- 📝 Conference paper (OBS_018.docx) → condensed version of results
 
-The full study — including detailed methodology, robustness analysis, additional figures and complete results — is available in this repository as an HTML report.
-
-This extended version constitutes the main scientific contribution, while the conference paper provides a condensed summary of the results.
+The extended version should be considered the primary reference.
 
 ---
 
-## License
+### License
+Code → MIT License
+Documentation & figures → CC BY 4.0
 
-The code in this repository is distributed under the MIT License.
-
-Unless otherwise stated, the documentation, written content and original figures produced by the author are distributed under the Creative Commons Attribution 4.0 International (CC BY 4.0) license.
-
-This allows sharing and adaptation of the material provided that proper attribution is given to the author.
-
-Third-party data (e.g., AEMET, HadCRUT5 or other external sources) are not covered by these licenses and remain subject to their respective terms of use.
+Third-party data (AEMET, HadCRUT5, etc.) remain subject to their respective licenses.
