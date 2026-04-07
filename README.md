@@ -6,6 +6,17 @@
   <img src="https://img.shields.io/badge/Reproducible-Yes-2a9d8f?style=flat-square">
 </p>
 
+<p align="center">
+  <a href="https://mariaalonsoleon.github.io/TemperatureAnomaly/report/analysis_extended.html">
+    <img src="https://img.shields.io/badge/OPEN%20INTERACTIVE%20HTML%20REPORT-Click%20here-E05C2A?style=for-the-badge&logo=googlechrome&logoColor=white">
+  </a>
+</p>
+
+<p align="center">
+  <b>👉 Open the full interactive report directly in your browser</b><br>
+  <sub>No download required</sub>
+</p>
+
 <br>
 
 <p align="center">
