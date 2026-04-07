@@ -1,0 +1,1442 @@
+---
+title: "Analysis of the temperature anomaly evolution in the Canary Islands between 1970 and 2024 in the global context"
+#subtitle: "Linear regression with robust diagnostics and recent trend evaluation"
+output:
+  html_document:
+    theme: readable
+    number_sections: true
+---
+
+<style>
+h1.title { font-size: 26px; color: #1B4965; }
+.subtitle { font-size: 16px; color: #555; }
+h1 { font-size: 22px; color: #1B4965; border-bottom: 2px solid #E05C2A; padding-bottom: 4px; }
+h2 { font-size: 18px; color: #2C6E8A; }
+h3 { font-size: 16px; }
+body { font-size: 14px; line-height: 1.6; }
+p { font-size: 14px; margin-bottom: 10px; }
+.discussion { background: #f8f9fa; border-left: 4px solid #E05C2A; padding: 12px 16px; margin: 16px 0; border-radius: 0 6px 6px 0; }
+.finding { background: #eef6f8; border-left: 4px solid #1B4965; padding: 12px 16px; margin: 16px 0; border-radius: 0 6px 6px 0; }
+.method { background: #f5f0eb; border-left: 4px solid #8B7355; padding: 12px 16px; margin: 16px 0; border-radius: 0 6px 6px 0; }
+img {
+  display: block;
+  margin: 16px auto;
+  max-width: 100%;
+  height: auto;
+}
+</style>
+
+
+```{r setup, echo=FALSE}
+# Global knitr options for the compiled document:
+#   warning/message = FALSE — suppress package warnings in the final HTML
+#   echo = FALSE            — do not show R code in the document
+#   error = TRUE            — continue compiling even if a chunk fails
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE,
+  echo    = FALSE,
+  error   = TRUE
+)
+```
+
+```{r libraries, include=FALSE}
+library(tseries)
+library(knitr)
+library(kableExtra)
+library(patchwork)
+library(lmtest)      # bptest (Breusch-Pagan)
+library(zoo)         # na.approx (used in utilities.R)
+library(MASS)
+library(flexdashboard)
+library(datasets)
+library(highcharter)
+library(fpp3)        # tsibble, fill_gaps, TSLM, yearmonth
+library(RColorBrewer)
+library(openxlsx)
+library(leaflet)
+library(geojsonio)
+library(plotly)
+library(ggplot2)
+library(tidyverse)
+library(purrr)
+library(nortest)     # ad.test (Anderson-Darling)
+library(sandwich)    # vcovHAC (HAC robust CI Newey-West)
+library(trend)       # sens.slope (Mann-Kendall + Sen's slope)
+source("scripts/utilities.R")   # rename utilidades.R → utilities.R to match this file
+```
+
+```{r parameters}
+# ── Analysis period ─────────────────────────────────────────────────────────
+# 1970-2024: covers the trend change identified by Mudelsee (2019)
+# around 1974 and is closed at 2024 (no 2025 data, except in the Annex).
+START_DATE   <- as.Date("1970-01-01")
+END_DATE     <- as.Date("2024-12-31")
+
+# Size of the "recent" window in years (used in sen.recent and trend.YJ).
+# For the monthly series it is multiplied by 12 when calling lm.analysis().
+N_RECENT_YEARS <- 10
+
+# ── Month names (locale-independent) ────────────────────────────────────────
+# Defined here as a global constant so all chunks use the same vector.
+# Never use format(date, "%B") — it returns locale-dependent names (e.g.
+# Spanish on Spanish systems). Always index into this vector via month().
+month_names <- c(
+  "January", "February", "March", "April",
+  "May", "June", "July", "August",
+  "September", "October", "November", "December"
+)
+
+# ── Area display order ───────────────────────────────────────────────────────
+# Used in factor() calls throughout all chunks for consistent ordering
+# in plots and tables. Defined here so it is globally available.
+area_order <- c(
+  "GLOBAL",
+  "NORTHERN HEMISPHERE",
+  "SOUTHERN HEMISPHERE",
+  "CANARY ISLANDS",
+  "GRAN CANARIA/GANDO",
+  "IZAÑA",
+  "S.C. TENERIFE",
+  "TENERIFE/LOS RODEOS"
+)
+
+# ── Formatting function for slope tables ────────────────────────────────────
+# Converts a slope and its half-width CI from °C/unit to °C/century
+# and returns them as a string "slope ± CI" with the specified number of decimals.
+# Example: fmt_century(0.0286, 0.0027) → "2.86 ± 0.27"
+fmt_century <- function(slope, ci, digits = 2) {
+  paste0(formatC(round(slope * 100, digits), format = "f", digits = digits),
+         " ± ",
+         formatC(round(ci * 100, digits), format = "f", digits = digits))
+}
+
+# ── Robustness function for optional YJ columns ─────────────────────────────
+# lm.analysis() returns YJN.*/YJR.* columns but in some workflows
+# (e.g. when using ensure_yj_cols in non-comparative scales) the
+# legacy columns RMSE.YJ/SW.YJ/... may not be present.
+# This function adds them as NA if missing, avoiding errors in transmute().
+ensure_yj_cols <- function(df) {
+  yj_cols <- c("RMSE.YJ", "SW.YJ", "AD.YJ", "BP.YJ", "lambda.YJ", "trend.YJ")
+  for (col in yj_cols) {
+    if (!col %in% names(df)) df[[col]] <- NA_real_
+  }
+  df
+}
+```
+
+```{r load_data}
+# Load monthly temperature anomalies from the RDS file.
+# The anomaly is defined as T_observed − T_reference_1961-1990, calculated
+# independently for each calendar month: the series is already
+# deseasonalised by construction, with no additional steps required.
+#
+# Renaming of AREA factor levels to abbreviate in tables and charts.
+#
+# as_tsibble() indexes by date (yearmonth) with key AREA.
+# fill_gaps() adds rows with value=NA for months without observations,
+# ensuring a regular time series with no implicit gaps.
+all_data <- readRDS("data/temperature_anomaly_2025.rds") %>%
+  as_tibble() %>%
+  filter(as.Date(date) >= START_DATE, as.Date(date) <= END_DATE)
+
+levels(all_data$AREA)[levels(all_data$AREA) == "LAS PALMAS DE GRAN CANARIA/GANDO"] <- "GRAN CANARIA/GANDO"
+levels(all_data$AREA)[levels(all_data$AREA) == "SANTA CRUZ DE TENERIFE"]           <- "S.C. TENERIFE"
+levels(all_data$AREA)[levels(all_data$AREA) == "NH"]                               <- "NORTHERN HEMISPHERE"
+levels(all_data$AREA)[levels(all_data$AREA) == "SH"]                               <- "SOUTHERN HEMISPHERE"
+levels(all_data$AREA)[levels(all_data$AREA) == "CANARIAS"]                         <- "CANARY ISLANDS"
+
+all_data <- all_data %>%
+  as_tsibble(index = date, key = AREA) %>%
+  fill_gaps()
+
+# Numeric time predictor used in lm() for the complete monthly series
+# and the acceleration analysis. Created here so it is available globally.
+# as.numeric() on a yearmonth returns months since the origin →
+# slopes in °C/month, multiplied by 12 later to convert to °C/year.
+all_data_num <- all_data %>%
+  as_tibble() %>%
+  mutate(
+    time = as.numeric(date),
+    AREA = factor(AREA, levels = area_order)
+  )
+```
+
+<div style="margin-top: 6px; margin-bottom: 22px; font-size: 15px; color: #444;">
+María Alonso León · Luis Álvarez León
+</div>
+
+**Abstract**
+
+This study quantifies temperature anomaly trends over the period 1970–2024 for eight areas: three global (global, northern hemisphere, southern hemisphere), four Canarian stations (Izaña, Tenerife/Los Rodeos, Santa Cruz de Tenerife, Gran Canaria/Gando) and one regional mean (Canary Islands), using data from HadCRUT5 and AEMET. Linear regression models (OLS) are fitted at three temporal scales — complete monthly series, annual mean and series by month — with a full battery of diagnostics including normality tests, homoscedasticity tests, autocorrelation tests, robust HAC confidence intervals and non-parametric estimation using Sen's slope and the Mann-Kendall test.
+
+Results show significant warming (Mann-Kendall p ≈ 0) in all areas. Warming at Canarian stations (+3.2 to +3.5 °C/century) is comparable to that of the northern hemisphere (~3.42 °C/century), although they display different monthly seasonalities.
+
+The observed slope for the regional mean in the Canary Islands (~3.35 °C/century) is similar to the projection of the ACCESS-CM2 climate model under the high-emissions RCP 7.0 scenario (3.2 °C/century), indicating that current warming follows a trajectory consistent with high emissions. An automatic reliability indicator based on six criteria is used to identify problematic models and strengthen confidence in the conclusions.
+
+Over the complete monthly series, results obtained with two alternative techniques are compared: (i) the Yeo-Johnson transform to improve the RMSE of the fit, and (ii) segmented linear regression (changepoint). In both cases the improvement in RMSE over linear regression is very small (< 2 %), reinforcing the goodness of the linear regression fit. Furthermore, the application of these methods suggests that a possible acceleration of warming may be occurring at the global level, and a deceleration in the Canary Islands, although this signal is weak due to the negligible RMSE improvement obtained by these methods.
+
+**Keywords:** temperature anomaly, linear regression, Sen's slope, Yeo-Johnson, Canary Islands, HadCRUT5, warming acceleration, AEMET.
+
+
+# Introduction
+
+## Context and objectives
+
+This study quantifies temperature anomaly trends over the period
+`r format(START_DATE, "%Y")`–`r format(END_DATE, "%Y")`, using monthly data, for
+eight geographical areas: three at global scale (global, northern hemisphere,
+southern hemisphere), four Canarian stations (Izaña, Tenerife/Los Rodeos,
+Santa Cruz de Tenerife, Gran Canaria/Gando) and one regional mean (Canary Islands). Data for
+the global series were obtained from HadCRUT5 (Morice et al., 2021). Data for the Canarian
+stations come from the State Meteorological Agency (AEMET) and correspond to stations with
+complete series prior to 1961.
+
+The methodology follows the approach of HadCRUT5 and CRUTEM5 (Osborn et al., 2021),
+which defines the **temperature anomaly** as the monthly difference between the
+observed temperature and the mean of the 1961–1990 reference period. This
+construction eliminates the seasonal cycle and allows a linear regression model to be
+applied directly without first modelling the seasonal component.
+
+The **objectives** of this study are:
+
+* Quantify the **historical trend of the temperature anomaly**, including monthly seasonality, using linear regression (OLS) with robust diagnostics. A model reliability indicator is introduced to easily identify problematic models.
+
+* Verify the **goodness of fit** of the linear regression by comparison with other methods and analyse whether a **recent trend change** exists.
+
+* Analyse the consistency of the estimates with those obtained in the long term by **climate models** (SITCAN and CMIP6).
+
+At the end of the paper an annex is included on the effect of incorporating 2025 data into the analysis.
+
+## Structure of the analysis
+
+The analysis is carried out at **three complementary temporal scales**:
+
+- **Complete monthly series** (~660 observations per area): maximum
+  temporal resolution, ideal for detecting short-term trends.
+
+- **Annual mean** (55 observations per area): averaging 12 months reduces
+  autocorrelation and residual seasonal variability, making it the cleanest
+  scale for long-term prediction.
+
+- **Series separated by month** (96 models = 8 areas × 12 months):
+  allows detection of whether the warming trend varies according to the month of the year.
+
+At all three scales the simple linear model is fitted:
+$$y(t) = \beta_0 + \beta_1 \cdot t + \varepsilon(t)$$
+where $y(t)$ is the temperature anomaly, $t$ is time and $\beta_1$ is the
+slope quantifying the rate of warming. All slopes are expressed in **°C/century** to facilitate interpretation.
+
+## Statistical methodology
+
+<div class="method">
+Each model is subjected to a complete battery of tests and estimators that
+verify the regression assumptions, quantify uncertainty and
+provide non-parametric alternatives. These are described below.
+</div>
+
+### Normality tests: Shapiro-Wilk and Anderson-Darling
+
+Linear regression assumes that residuals follow a normal distribution.
+Two complementary tests are applied: **Shapiro-Wilk (SW)**, which compares
+residual quantiles with the theoretical Gaussian quantiles and is the most
+powerful for small samples (n < 50), but loses discriminatory power with large
+samples; and **Anderson-Darling (AD)**, a variant of the Kolmogorov-Smirnov
+test that gives greater weight to the tails of the distribution and maintains
+good power even with n > 50. AD is the primary normality test in this study.
+A p-value > 0.05 indicates that normality is not rejected.
+
+### Homoscedasticity test: Breusch-Pagan
+
+The **Breusch-Pagan (BP)** test evaluates whether the variance of residuals is
+constant along the series. It regresses squared residuals on the temporal
+predictor; if the variance is constant, the auxiliary regression statistic $nR^2$
+follows a $\chi^2$ distribution with 1 degree of freedom. A p-value < 0.05
+indicates heteroscedasticity, implying that OLS confidence intervals may be
+underestimated.
+
+### Autocorrelation test: Ljung-Box
+
+The **Ljung-Box (LB)** test evaluates whether residual autocorrelations up to
+a given lag $k$ are jointly significant:
+$$Q = n(n+2) \sum_{j=1}^{k} \frac{\hat{\rho}_j^2}{n-j}$$
+Under the null hypothesis of independence, $Q \sim \chi^2(k)$. A p-value
+< 0.05 indicates significant residual autocorrelation, which is common in
+monthly series where the anomaly of one month partially depends on the previous month's.
+
+### Robust HAC confidence interval (Newey-West)
+
+When autocorrelation or heteroscedasticity is detected, standard OLS confidence
+intervals are incorrect. The **HAC (Heteroscedasticity and Autocorrelation
+Consistent)** Newey-West estimator provides valid standard errors of the slope
+even in the presence of both problems. Comparing the classical OLS confidence
+interval (CI) and the HAC CI quantifies the bias of the former: if HAC CI ≈ OLS CI,
+classical inference is reliable; if HAC CI > OLS CI, the classical interval is optimistic.
+
+### Mann-Kendall test and Sen's slope
+
+These non-parametric estimators complement the OLS model without requiring distributional assumptions:
+
+**Mann-Kendall (MK)** is a monotonic trend test that counts concordant pairs
+($y_j > y_i$ with $j > i$) and discordant pairs ($y_j < y_i$). By using only
+the sign of differences, it is insensitive to outliers. A p-value < 0.05
+indicates a significant trend.
+
+**Sen's slope (Theil-Sen)** calculates the median of all slopes
+$(y_j - y_i)/(t_j - t_i)$ between pairs of points. It is extremely robust:
+up to 29 % of data may be anomalous without affecting the result
+(Mudelsee, 2019). Agreement between the OLS slope and Sen's slope confirms
+the absence of distortion by extreme values.
+
+### Reliability indicator
+
+Each model receives a reliability indicator that automatically evaluates
+six criteria. All failing criteria are concatenated; if none fail, the
+model receives ✅ OK:
+
+| Indicator | Condition | Interpretation |
+|-----------|-----------|----------------|
+| ⛔ R²<0.10 | R² < 0.10 | The trend signal is dominated by noise |
+| ⚠️ CI>slope | CI95 > \|slope\| | The trend is indistinguishable from zero |
+| ⚠️ AD | AD p < 0.05 | Normality of residuals is rejected |
+| ⚠️ BP | BP p < 0.05 | Heteroscedasticity is detected |
+| ⚠️ LB | LB p < 0.05 | Residual autocorrelation is detected |
+| ⚠️ MK n.s. | MK p > 0.05 | Mann-Kendall does not detect a significant trend |
+
+
+# Related work
+
+## Global temperature series
+
+The HadCRUT5 dataset (Morice et al., 2021) reconstructs global temperature
+anomalies from 1850 by combining land surface air temperatures
+(CRUTEM5; Osborn et al., 2021) and sea surface temperatures (HadSST4).
+HadCRUT5 introduces methodological improvements over previous versions,
+including better spatial coverage and a more rigorous uncertainty estimation,
+resulting in an upward revision of historical warming.
+
+## Analysis of climate trends
+
+Mudelsee (2019) provides a comprehensive review of statistical methods
+for assessing long-term systematic changes in climate series,
+emphasising the need to address autocorrelation and non-linearity, and
+demonstrating an acceleration of warming from 1974 onwards. This result justifies **the choice of 1970 as the starting year of this study** to analyse the historical period covering this trend change. Mulomba Mukadi and González-García (2021) apply trend tests and ARIMA models to temperature series in 47 stations across mainland Spain (1940–2013), identifying a significant increase in temperature especially from the 1980s onwards.
+
+## Climate projections for the Canary Islands
+
+Climate models are complex systems of equations that, among other things, predict the evolution of minimum and maximum temperatures as a function of a set of variables, of which the level of greenhouse gas emissions stands out according to the following scenarios:
+
+* RCP 2.6: low emissions, with strong reduction of greenhouse gases to limit global warming.
+
+* RCP 4.5: intermediate emissions, where emissions stabilise by mid-century through moderate climate policies.
+
+* RCP 7.0: high emissions, with continued emission growth and limited mitigation.
+
+* RCP 8.5: very high emissions, associated with strong dependence on fossil fuels and corresponding to the highest projected warming.
+
+To evaluate, in the case of the Canary Islands, the consistency between the trend obtained through linear regression and the results of climate models, the warming rate derived from published projections for the archipelago is estimated. The Earth and Atmosphere Observation Group of the University of La Laguna (Expósito et al., 2015), based on data collected in SITCAN (2026), projects for the period 2000–2095 a warming rate of the mean temperature in the Canary Islands of 1.7 °C/century under the RCP 4.5 scenario and 3.4 °C/century under the RCP 8.5 scenario. Furthermore, AEMET (2024) publishes regionalised projections within the CMIP6 project. In this context, the ACCESS-CM2 global model, combined with the RegBA statistical downscaling method, estimates for the period 2015–2100 a warming rate in the Canary Islands of 2.3 °C/century (RCP 4.5), 3.2 °C/century (RCP 7.0) and 5.4 °C/century (RCP 8.5).
+
+These projections depend on the model and the emissions scenario, but all confirm a significant increase in temperatures. As will be discussed in the conclusions, **in the case of the Canary Islands, the slope estimated by simple linear regression on observed data (1970–2024) is comparable to the projection of the high-emissions RCP 7.0 scenario estimated by the ACCESS-CM2 model**.
+
+
+# Analysis of the temperature anomaly by temporal scale
+
+In this section the temperature anomaly is analysed separately at the three temporal scales: (i) complete monthly series, (ii) annual mean and (iii) series separated by month.
+
+## Complete monthly series
+
+First, the evolution of the monthly series for all 8 analysed regions is illustrated, showing a good fit to the regression line.
+
+```{r monthly_series_plot, out.width="100%", fig.align="center"}
+# Calculate OLS and HAC confidence bands for the visualisation of the
+# complete monthly series. All areas are processed simultaneously
+# with group_modify to maintain each group's context.
+# area_order is defined in the parameters chunk and is globally available.
+
+ci_bands_monthly <- all_data %>%
+  as_tibble() %>%
+  mutate(
+    date = as.Date(date),
+    AREA = factor(AREA, levels = area_order)
+  ) %>%
+  filter(!is.na(value)) %>%
+  group_by(AREA) %>%
+  group_modify(~ {
+    mod      <- lm(value ~ date, data = .x)
+    pred_ols <- predict(mod, interval = "confidence", level = 0.95)
+    v_hac    <- sandwich::vcovHAC(mod)
+    X        <- model.matrix(mod)
+    se_hac   <- sqrt(rowSums((X %*% v_hac) * X))
+    tc       <- qt(0.975, df = mod$df.residual)
+
+    tibble(
+      AREA   = .x$AREA,
+      date   = .x$date,
+      value  = .x$value,
+      fit    = pred_ols[, "fit"],
+      ols_lo = pred_ols[, "lwr"],
+      ols_hi = pred_ols[, "upr"],
+      hac_lo = pred_ols[, "fit"] - tc * se_hac,
+      hac_hi = pred_ols[, "fit"] + tc * se_hac
+    )
+  }) %>%
+  ungroup()
+
+ci_bands_monthly %>%
+  ggplot(aes(x = date)) +
+  geom_ribbon(aes(ymin = hac_lo, ymax = hac_hi), alpha = 0.3, fill = "red") +
+  geom_ribbon(aes(ymin = ols_lo, ymax = ols_hi), alpha = 0.25, fill = "green") +
+  geom_line(aes(y = value), colour = "grey40", linewidth = 0.) +
+  geom_point(aes(y = value), size = 0.1, alpha = 0.5, colour = "grey40") +
+  geom_line(aes(y = fit), colour = "blue", linewidth = 0.8) +
+  facet_wrap(~ AREA, ncol = 4) +
+  labs(
+    title    = "Monthly temperature anomaly by area with linear fit",
+    subtitle = "Bands: 95% CI OLS (green) vs 95% CI HAC Newey-West (red)",
+    x = "Year", y = "Anomaly (°C)"
+  ) +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(strip.text = element_text(face = "bold"), legend.position = "top")
+```
+
+<div class="discussion">
+The global series show a clear and monotonic upward trend. The two confidence
+bands (OLS in green, HAC in red) are narrow and almost indistinguishable in the
+chart due to monthly oscillations.
+
+The Canarian stations show greater dispersion, especially Izaña
+(2,400 m altitude) and Tenerife/Los Rodeos. In all areas, without
+exception, the direction of the trend is positive.
+</div>
+
+
+### Results {-}
+
+The table shows annual trends by area (°C/century), estimated using OLS and Sen. The *reliability* column summarises the model diagnostics, which are analysed in the discussion.
+
+```{r lm_monthly_full}
+# Fit lm(value ~ time) by AREA with complete diagnostics.
+# all_data_num was created in the load_data chunk and is available globally.
+# n_recent = N_RECENT_YEARS * 12 so that the recent window is 10 years
+# in months units (the same time window as in the annual scale).
+# tryCatch() prevents an error in one area from stopping the full analysis.
+results_monthly_full <- all_data_num %>%
+  group_by(AREA) %>%
+  filter(!is.na(value)) %>%
+  nest() %>%
+  mutate(
+    model    = map(data, ~ lm(value ~ time, data = .x)),
+    analysis = map(model, ~ tryCatch(
+      lm.analysis(.x, n_recent = N_RECENT_YEARS * 12L),
+      error = function(e) tibble(error = conditionMessage(e))
+    ))
+  ) %>%
+  select(AREA, analysis) %>%
+  unnest(analysis) %>%
+  mutate(
+    reliability = pmap_chr(
+      list(R2, CI95, lm.slope, AD, BP, MK, LB),
+      function(r2, ci, slope, ad, bp, mk, lb) {
+        flags <- c(
+          if (r2  < 0.10)        "⛔R²<0.10",
+          if (ci  > abs(slope))  "⚠️CI>slope",
+          if (ad  < 0.05)        "⚠️AD",
+          if (bp  < 0.05)        "⚠️BP",
+          if (mk  > 0.05)        "⚠️MK n.s.",
+          if (lb  < 0.05)        "⚠️LB"
+        )
+        if (length(flags) == 0) "✅ OK" else paste(flags, collapse = " ")
+      }
+    )
+  )
+
+# Convert slopes from °C/month to °C/year (×12) to be directly
+# comparable with those at the annual scale. Applied to all slope
+# estimators and CIs with any_of() for robustness if any column is missing.
+results_monthly_full <- results_monthly_full %>%
+  mutate(
+    across(any_of(c("lm.slope", "CI95", "CI95.HAC", "sen.slope", "sen.CI95",
+                    "sen.recent", "sen.recent.CI95", "YJN.trend", "YJR.trend")),
+           ~ . * 12)
+  ) %>%
+  ensure_yj_cols()
+```
+
+```{r table_monthly_full}
+# Compact results table: shows only the most informative columns
+# (reliability, R², OLS and Sen slopes with their CIs in °C/century).
+# fmt_century() converts °C/year → °C/century and formats as "slope ± CI".
+results_monthly_full %>%
+  ungroup() %>%
+  arrange(AREA) %>%
+  transmute(
+    AREA, reliability, R2,
+    `OLS ± CI95`     = fmt_century(lm.slope, CI95),
+    `OLS ± CI95.HAC` = fmt_century(lm.slope, CI95.HAC),
+    `Sen ± CI95`     = fmt_century(sen.slope, sen.CI95)
+  ) %>%
+  kable(
+    caption = "Linear model by area (complete monthly series). Slopes in °C/century",
+    digits  = 3, align = c("l", "l", rep("r", 4))
+  )
+```
+
+### Discussion {-}
+
+<div class="discussion">
+**Historical trend.** All areas show highly significant warming (Mann-Kendall p ≈ 0).
+Slopes range between +1.8 °C/century (southern hemisphere) and +3.5 °C/century
+(Gran Canaria/Gando). The agreement between the OLS slope and Sen's slope is good,
+confirming that no outliers are distorting the fit.
+
+**Normality.** Global and northern hemisphere receive the ⚠AD indicator
+(normality rejected by Anderson-Darling), an artefact of sample size: with
+n ≈ 660 observations, the test detects minimal deviations with no practical
+consequences. Regression is robust against moderate departures from normality.
+
+**Heteroscedasticity.** Gran Canaria/Gando accumulates ⚠AD and ⚠BP. At this
+station, the HAC CI is approximately double the OLS CI, quantifying the
+underestimation of the classical interval.
+
+**Autocorrelation.** The Ljung-Box test rejects independence in all areas,
+which is expected in monthly series. The HAC CI corrects this effect.
+</div>
+
+
+
+## Annual mean series
+
+The following shows the evolution of the annual mean for all areas:
+
+```{r annual_series_plot, out.width="100%", fig.align="center"}
+# Aggregate to annual scale for visualisation.
+# The mean of all observations for each year by area is computed.
+annual_data_plot <- all_data %>%
+  as_tibble() %>%
+  mutate(
+    year = year(date),
+    AREA = factor(AREA, levels = area_order)
+  ) %>%
+  group_by(AREA, year) %>%
+  summarise(value = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  filter(!is.na(value))
+
+# OLS and HAC confidence bands at annual scale
+ci_bands_annual <- annual_data_plot %>%
+  group_by(AREA) %>%
+  group_modify(~ {
+    mod      <- lm(value ~ year, data = .x)
+    pred_ols <- predict(mod, interval = "confidence", level = 0.95)
+    v_hac    <- sandwich::vcovHAC(mod)
+    X        <- model.matrix(mod)
+    se_hac   <- sqrt(rowSums((X %*% v_hac) * X))
+    tc       <- qt(0.975, df = mod$df.residual)
+
+    tibble(
+      year   = .x$year,
+      value  = .x$value,
+      fit    = pred_ols[, "fit"],
+      ols_lo = pred_ols[, "lwr"],
+      ols_hi = pred_ols[, "upr"],
+      hac_lo = pred_ols[, "fit"] - tc * se_hac,
+      hac_hi = pred_ols[, "fit"] + tc * se_hac
+    )
+  }) %>%
+  ungroup()
+
+ci_bands_annual %>%
+  mutate(year = as.Date(paste0(year, "-01-01"))) %>%
+  ggplot(aes(x = year)) +
+  geom_ribbon(aes(ymin = hac_lo, ymax = hac_hi), alpha = 0.3, fill = "red") +
+  geom_ribbon(aes(ymin = ols_lo, ymax = ols_hi), alpha = 0.25, fill = "green") +
+  geom_line(aes(y = value), colour = "grey40", linewidth = 0) +
+  geom_point(aes(y = value), size = 1, alpha = 0.5, colour = "grey40") +
+  geom_line(aes(y = fit), colour = "blue", linewidth = 0.8) +
+  facet_wrap(~ AREA, ncol = 4) +
+  labs(
+    title    = "Annual mean temperature anomaly by area with linear fit",
+    subtitle = "Bands: 95% CI OLS (green) vs 95% CI HAC Newey-West (red)",
+    x = "Year", y = "Annual mean anomaly (°C)"
+  ) +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "top"
+  )
+```
+
+### Results {-}
+
+```{r lm_annual}
+# Aggregate to annual scale for the model (same calculation as for visualisation).
+# The predictor is the calendar year (integer), so lm.slope is in °C/year.
+# n_recent = N_RECENT_YEARS (10 years) for the recent window.
+annual_data <- all_data %>%
+  as_tibble() %>%
+  mutate(
+    year = year(date),
+    AREA = factor(AREA, levels = area_order)
+  ) %>%
+  group_by(AREA, year) %>%
+  summarise(value = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  filter(!is.na(value))
+
+results_annual <- annual_data %>%
+  group_by(AREA) %>%
+  nest() %>%
+  mutate(
+    model    = map(data, ~ lm(value ~ year, data = .x)),
+    analysis = map(model, ~ tryCatch(
+      lm.analysis(.x, n_recent = N_RECENT_YEARS),
+      error = function(e) tibble(error = conditionMessage(e))
+    ))
+  ) %>%
+  select(AREA, analysis) %>%
+  unnest(analysis) %>%
+  mutate(
+    reliability = pmap_chr(
+      list(R2, CI95, lm.slope, AD, BP, MK, LB),
+      function(r2, ci, slope, ad, bp, mk, lb) {
+        flags <- c(
+          if (r2  < 0.10)        "⛔R²<0.10",
+          if (ci  > abs(slope))  "⚠️CI>slope",
+          if (ad  < 0.05)        "⚠️AD",
+          if (bp  < 0.05)        "⚠️BP",
+          if (mk  > 0.05)        "⚠️MK n.s.",
+          if (lb  < 0.05)        "⚠️LB"
+        )
+        if (length(flags) == 0) "✅ OK" else paste(flags, collapse = " ")
+      }
+    )
+  ) %>%
+  ensure_yj_cols()
+```
+
+```{r table_annual}
+results_annual %>%
+  ungroup() %>%
+  arrange(AREA) %>%
+  transmute(
+    AREA, reliability, R2,
+    `OLS ± CI95`     = fmt_century(lm.slope, CI95),
+    `OLS ± CI95.HAC` = fmt_century(lm.slope, CI95.HAC),
+    `Sen ± CI95`     = fmt_century(sen.slope, sen.CI95)
+  ) %>%
+  kable(
+    caption = "Linear model by area (annual mean). Slopes in °C/century",
+    digits  = 3, align = c("l", "l", rep("r", 4))
+  )
+```
+
+### Discussion {-}
+
+<div class="discussion">
+**Goodness of fit.** Except for S.C. Tenerife and Gran Canaria/Gando where the autocorrelation test fails, the remaining areas obtain ✅ OK in reliability. The highest R² values correspond to global series: global (0.89) and northern hemisphere (0.90), indicating that the linear model explains almost 90% of the inter-annual variability. Canarian stations obtain R² between 0.40 (Los Rodeos) and 0.58 (Canary Islands).
+
+**Historical slopes.** The northern hemisphere warms at +3.42 °C/century,
+almost double that of the southern (+1.75 °C/century), consistent with the
+greater continental proportion of the northern hemisphere (Morice et al., 2021).
+Canarian stations lie between +3.23 and +3.52 °C/century, comparable to the
+northern hemisphere average, indicating that the Canary Islands fully participate
+in the hemispheric warming signal.
+
+**Consistency of OLS CI vs HAC CI.** At the annual scale, both intervals are
+practically identical in most areas, confirming that autocorrelation between
+consecutive years is low and that classical OLS inference is reliable at this scale.
+</div>
+
+### Consistency between the monthly series and the annual mean {-}
+
+<div class="discussion">
+Slopes estimated at the monthly scale (converted to °C/century by ×12) are
+consistent with those obtained at the annual scale. For example, GLOBAL
+obtains 2.88 °C/century on the monthly series and 2.86 °C/century on the
+annual mean; the northern hemisphere, 3.36 vs 3.42; the Canary Islands,
+3.36 vs 3.35. Differences (< 0.1 °C/century) are negligible.
+
+This convergence is important because it validates the use of both scales as
+complementary: the monthly series provides greater statistical power (more
+observations) and allows local changes to be detected with greater resolution,
+while the annual mean offers greater reliability in terms of the tests applied.
+
+The main qualitative difference between both scales lies in the Ljung-Box test:
+all areas show significant autocorrelation at the monthly scale (⚠LB), while
+at the annual scale autocorrelation disappears in most areas. This does not affect
+the slope estimates (which are unbiased in both cases) but rather the confidence
+intervals: at the monthly scale the HAC CI must be used; at the annual scale the
+classical OLS CI is sufficient.
+</div>
+
+
+## Analysis by month and area
+
+The following chart shows, as an example, the evolution of the temperature anomaly for the Canary Islands area, separated by months of the year.
+
+```{r canary_monthly_plot, out.width="100%", fig.align="center"}
+# Visualisation of the series by month for the CANARY ISLANDS.
+# month_names is defined globally in the parameters chunk.
+# month() extracts the integer (1–12) which indexes into month_names —
+# locale-independent, unlike format(date, "%B") which returns locale-specific
+# names (e.g. Spanish on Spanish systems) and would cause NAs.
+
+ci_bands_canary <- all_data %>%
+  as_tibble() %>%
+  filter(!is.na(value), AREA == "CANARY ISLANDS") %>%
+  mutate(
+    date       = as.Date(date),
+    month_name = month_names[month(date)],
+    month_name = factor(month_name, levels = month_names)
+  ) %>%
+  group_by(month_name) %>%
+  group_modify(~ {
+    mod      <- lm(value ~ date, data = .x)
+    pred_ols <- predict(mod, interval = "confidence", level = 0.95)
+    v_hac    <- sandwich::vcovHAC(mod)
+    X        <- model.matrix(mod)
+    se_hac   <- sqrt(rowSums((X %*% v_hac) * X))
+    tc       <- qt(0.975, df = mod$df.residual)
+
+    tibble(
+      date   = .x$date,
+      value  = .x$value,
+      fit    = pred_ols[, "fit"],
+      ols_lo = pred_ols[, "lwr"],
+      ols_hi = pred_ols[, "upr"],
+      hac_lo = pred_ols[, "fit"] - tc * se_hac,
+      hac_hi = pred_ols[, "fit"] + tc * se_hac
+    )
+  }) %>%
+  ungroup()
+
+ci_bands_canary %>%
+  ggplot(aes(x = date)) +
+  geom_ribbon(aes(ymin = hac_lo, ymax = hac_hi), alpha = 0.3, fill = "red") +
+  geom_ribbon(aes(ymin = ols_lo, ymax = ols_hi), alpha = 0.25, fill = "green") +
+  geom_point(aes(y = value), size = 1, alpha = 0.5, colour = "grey40") +
+  geom_line(aes(y = value), linewidth = 0.3, alpha = 0.5, colour = "grey40") +
+  geom_line(aes(y = fit), colour = "blue", linewidth = 0.8) +
+  facet_wrap(~ month_name, ncol = 4) +
+  labs(
+    title    = "Temperature anomaly by month in the CANARY ISLANDS with linear fit",
+    subtitle = "Bands: 95% CI OLS (green) vs 95% CI HAC Newey-West (red)",
+    x = "", y = "Anomaly (°C)"
+  ) +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "top"
+  )
+```
+
+```{r lm_by_month}
+# month_names is defined globally in the parameters chunk.
+
+# Series by month: all observations of a specific month across the years
+# (one data point per year). The predictor is the year (integer), not the date,
+# because the distance between points is always 1 year at this scale.
+# No prior averaging: since the data are monthly, there is already a single
+# record per (AREA, year, month).
+monthly_data_by_month <- all_data %>%
+  as_tibble() %>%
+  mutate(
+    year       = year(date),
+    month_num  = month(date),
+    AREA       = factor(AREA, levels = area_order)
+  ) %>%
+  filter(!is.na(value))
+
+results_by_month <- monthly_data_by_month %>%
+  group_by(AREA, month_num) %>%
+  nest() %>%
+  mutate(
+    model    = map(data, ~ lm(value ~ year, data = .x)),
+    analysis = map(model, ~ tryCatch(
+      lm.analysis(.x, n_recent = N_RECENT_YEARS),
+      error = function(e) tibble(error = conditionMessage(e))
+    ))
+  ) %>%
+  select(AREA, month_num, analysis) %>%
+  unnest(analysis) %>%
+  mutate(
+    month_name  = factor(month_names[month_num], levels = month_names),
+    reliability = pmap_chr(
+      list(R2, CI95, lm.slope, AD, BP, MK, LB),
+      function(r2, ci, slope, ad, bp, mk, lb) {
+        flags <- c(
+          if (r2  < 0.10)        "⛔R²<0.10",
+          if (ci  > abs(slope))  "⚠️CI>slope",
+          if (ad  < 0.05)        "⚠️AD",
+          if (bp  < 0.05)        "⚠️BP",
+          if (mk  > 0.05)        "⚠️MK n.s.",
+          if (lb  < 0.05)        "⚠️LB"
+        )
+        if (length(flags) == 0) "✅ OK" else paste(flags, collapse = " ")
+      }
+    )
+  ) %>%
+  arrange(AREA, month_num) %>%
+  ensure_yj_cols()
+```
+
+To present the results for all areas, heat maps are used to visualise the slopes obtained (in °C/century) by area and month, as well as the reliability of the fit in each case. It can be observed that, except for models with very low R² (⛔R²<0.10), when a model fails it only does so in one of the criteria.
+
+```{r heatmap_slope, out.width="100%", fig.asp=0.4, fig.align="center"}
+# Heat map of the slope (°C/century) by area and month.
+# The YlOrRd palette goes from yellow (low) to dark red (high) so that
+# months with greater warming are visually prominent.
+heatmap_slope_data <- results_by_month %>%
+  ungroup() %>%
+  select(AREA, month_name, lm.slope) %>%
+  rename(period = month_name) %>%
+  mutate(
+    AREA   = factor(AREA, levels = area_order),
+    period = factor(period, levels = c(month_names, "ANNUAL"))
+  ) %>%
+  arrange(AREA, period)
+
+heatmap_slope_data %>%
+  mutate(lm.slope = 100 * lm.slope) %>%   # °C/year → °C/century for display
+  ggplot(aes(x = period, y = AREA, fill = lm.slope)) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_text(aes(label = sprintf("%.2f", lm.slope)), size = 3.0, colour = "black") +
+  scale_fill_distiller(
+    palette   = "YlOrRd",
+    direction = 1,
+    name      = "Slope\n(°C/century)"
+  ) +
+  labs(
+    title = "Heat map of warming (°C/century) by area and month",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+    axis.text.y = element_text(size = 9),
+    panel.grid  = element_blank()
+  )
+```
+
+```{r heatmap_reliability, out.width="100%", fig.asp=0.4, fig.align="center"}
+# Heat map of reliability by area and month.
+# results_by_month2 is recalculated with a numeric version of the reliability
+# indicator (0 = OK, 1 = one failure, 2 = two or more failures or ⛔R²)
+# to encode the tile colour. The label shows the first failure detected
+# (the most serious according to the evaluation order).
+
+results_by_month2 <- monthly_data_by_month %>%
+  mutate(AREA = factor(AREA, levels = area_order)) %>%
+  group_by(AREA, month_num) %>%
+  nest() %>%
+  mutate(
+    model    = map(data, ~ lm(value ~ year, data = .x)),
+    analysis = map(model, ~ tryCatch(
+      lm.analysis(.x, n_recent = N_RECENT_YEARS),
+      error = function(e) tibble(error = conditionMessage(e))
+    ))
+  ) %>%
+  select(AREA, month_num, analysis) %>%
+  unnest(analysis) %>%
+  mutate(
+    month_name = factor(month_names[month_num], levels = month_names),
+
+    reliability_score = pmap_int(
+      list(R2, CI95, lm.slope, AD, BP, MK, LB),
+      function(r2, ci, slope, ad, bp, mk, lb) {
+        if (r2 < 0.10) return(2L)
+        n_failures <- 0L
+        if (ci  > abs(slope)) n_failures <- n_failures + 1L
+        if (ad  < 0.05)       n_failures <- n_failures + 1L
+        if (bp  < 0.05)       n_failures <- n_failures + 1L
+        if (mk  > 0.05)       n_failures <- n_failures + 1L
+        if (lb  < 0.05)       n_failures <- n_failures + 1L
+        n_failures
+      }
+    ),
+
+    reliability_label = pmap_chr(
+      list(R2, CI95, lm.slope, AD, BP, MK, LB),
+      function(r2, ci, slope, ad, bp, mk, lb) {
+        if (r2 < 0.10)         return("⛔R²")
+        if (ci > abs(slope))   return("⚠️CI")
+        if (ad < 0.05)         return("⚠️AD")
+        if (bp < 0.05)         return("⚠️BP")
+        if (mk > 0.05)         return("⚠️MK")
+        if (lb < 0.05)         return("⚠️LB")
+        return("✅OK")
+      }
+    )
+  ) %>%
+  arrange(AREA, month_num) %>%
+  ensure_yj_cols()
+
+results_by_month2 %>%
+  ggplot(aes(x = month_name, y = AREA, fill = reliability_score,
+             label = reliability_label)) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_text(size = 3, colour = "black") +
+  labs(title = "Heat map of reliability by area and month", x = NULL, y = NULL) +
+  scale_fill_gradient(low = "chartreuse1", high = "firebrick1") +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(
+    axis.text.x    = element_text(angle = 45, hjust = 1, size = 9),
+    axis.text.y    = element_text(size = 9),
+    panel.grid     = element_blank(),
+    legend.position = "none"
+  )
+```
+
+
+<div class="finding">
+**Seasonality of warming.** Canarian stations show a marked seasonal
+profile, with maximum slopes in April–August and minimum in September. Izaña
+presents the extreme values, partly due to poor fit quality in some months.
+The northern hemisphere presents a seasonal profile that differs significantly
+from the Canarian stations, with greater warming in January–March.
+</div>
+
+
+### Problematic models {-}
+
+<div class="discussion">
+Of the 96 models, **7 receive ⛔R²<0.10**, concentrated in three areas:
+
+- **Izaña** — January (R² = 0.05), February (R² = 0.00), November (R² = 0.09).
+  Winter variability at 2,400 m altitude (thermal inversions, Saharan
+  intrusions) may mask the trend signal.
+
+- **Tenerife/Los Rodeos** — February (R² = 0.07), July (R² = 0.08),
+  September (R² = 0.05). The altitude (633 m), orography and cloudiness may
+  introduce high variability.
+
+- **Canary Islands (regional mean)** — February (R² = 0.06), inheriting the
+  weaknesses of its component stations.
+</div>
+
+### OLS vs Sen consistency {-}
+
+The following figure shows the relationship between OLS slopes and Sen's slopes by month and area, together with the 1:1 reference diagonal.
+
+```{r sen_vs_ols_plot, fig.width=10, fig.height=6}
+# Scatter plot of OLS vs Sen by month and area.
+# Points above the diagonal: OLS overestimates relative to Sen (positive outliers
+# pull the OLS line upward). Points below the diagonal: OLS underestimates
+# (negative outliers drag the line downward).
+results_by_month %>%
+  ggplot(aes(x = lm.slope, y = sen.slope, colour = AREA)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey50") +
+  geom_point(size = 2, alpha = 0.8) +
+  facet_wrap(~ month_name, ncol = 4) +
+  labs(
+    title  = "OLS slope vs Sen's slope by month and area",
+    x      = "OLS slope (°C/year)",
+    y      = "Sen's slope (°C/year)",
+    colour = "Area"
+  ) +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(legend.position = "bottom")
+```
+
+<div class="discussion">
+The tight clustering around the diagonal confirms that both estimators produce
+practically identical slopes in all months. No systematic bias of OLS relative to
+Sen is observed, validating the classical linear model as the primary estimator.
+</div>
+
+
+# Integrated diagnostic summary
+
+Below is a comparison of the results obtained as a function of temporal scale, including the percentages of models passing each of the applied tests.
+
+```{r diagnostic_summary}
+# Summary table aggregating the diagnostic indicators from the three analyses.
+# For each scale, the percentage of models that do NOT reject each
+# assumption (AD, BP, LB) and the percentage with a significant trend (MK)
+# is calculated. Mean R² and mean OLS vs HAC CIs are also compared.
+bind_rows(
+  results_monthly_full %>% mutate(scale = "Complete monthly"),
+  results_annual       %>% mutate(scale = "Annual"),
+  results_by_month     %>% mutate(scale = "By month")
+) %>%
+  ungroup() %>%
+  summarise(
+    .by = scale,
+    `AD > 0.05 (%)` = round(mean(AD > 0.05, na.rm = TRUE) * 100, 1),
+    `BP > 0.05 (%)` = round(mean(BP > 0.05, na.rm = TRUE) * 100, 1),
+    `LB > 0.05 (%)` = round(mean(LB > 0.05, na.rm = TRUE) * 100, 1),
+    `MK < 0.05 (%)` = round(mean(MK < 0.05, na.rm = TRUE) * 100, 1),
+    `Mean R²`                 = round(mean(R2,        na.rm = TRUE), 3),
+    `Mean slope (°C/century)` = round(mean(lm.slope,  na.rm = TRUE) * 100, 2),
+    `CI95 (°C/century)`       = round(mean(CI95,      na.rm = TRUE) * 100, 2),
+    `CI95.HAC (°C/century)`   = round(mean(CI95.HAC,  na.rm = TRUE) * 100, 2)
+  ) %>%
+  mutate(scale = factor(scale,
+                        levels = c("Complete monthly", "Annual", "By month"))) %>%
+  arrange(scale) %>%
+  kable(
+    caption = "Diagnostic summary by scale. Slopes in °C/century",
+    digits  = 2
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                full_width = FALSE, font_size = 12)
+```
+
+<div class="discussion">
+The **annual scale** is the most appropriate for formal inference: higher
+percentage of satisfied assumptions and higher R². The **complete monthly
+scale** provides greater statistical power. The **by-month scale** reveals
+the seasonal structure but with greater noise (7 of 96 models with ⛔).
+</div>
+
+# Comparison with other methods and analysis of trend change
+
+In this section, the results of the linear regression model are compared with
+two alternative methods applied to the **complete monthly series**, with the
+objective of evaluating the goodness of the linear fit and detecting possible
+trend changes:
+
+- **Yeo-Johnson transform**: a power transformation of the response variable
+  is estimated that minimises the root mean square error (RMSE) between the
+  original series and the curve fitted using the transform. The recent trend
+  is obtained as the local slope of this curve over the last 10 years. Unlike
+  simple linear regression, the Yeo-Johnson curve can capture smooth
+  accelerations or decelerations.
+
+- **Segmented linear regression (changepoint)**: a model with two linear
+  segments joined at an optimal changepoint is fitted, determined by
+  minimising the mean RMSE across all areas. The **changepoint is located in
+  November 1983**. The slope of the second segment quantifies the trend
+  change after the inflection point.
+
+Comparing the RMSE values obtained by the three models (OLS, Yeo-Johnson and
+segmented regression) allows the relative improvement in goodness of fit to be
+quantified when non-linearity or a slope change is introduced. Small improvements
+indicate that the simple linear model already adequately captures the underlying trend.
+
+
+```{r acceleration_analysis, cache=TRUE}
+# ── Local function: optimise YJ lambda by minimising RMSE ───────────────────
+# Minimum RMSE criterion (different from the normality criterion in utilities.R):
+# here the lambda that best reconstructs y on the original scale is sought,
+# not the one that makes the distribution more normal. This is the appropriate
+# criterion for comparing goodness of fit (RMSE) between OLS and Yeo-Johnson.
+optimise_yj_rmse <- function(x, y, lambda_range = c(-2, 3)) {
+  mu <- mean(y); sigma <- sd(y); y_std <- (y - mu) / sigma
+  error_fn <- function(lambda) {
+    yj_trans  <- yeo.johnson(y_std, lambda)
+    fit       <- lm(yj_trans ~ x)
+    y_back    <- mu + sigma * yeo.johnson.inverse(fitted(fit), lambda)
+    sum((y - y_back)^2)   # SSE on original scale
+  }
+  optimize(error_fn, interval = lambda_range)$minimum
+}
+
+# ── Acceleration analysis by area ────────────────────────────────────────────
+# For each area the following are calculated:
+#   - Historical OLS slope with HAC CI
+#   - YJ-RMSE lambda and RMSE of the YJ fit
+#   - Recent YJ trend: local slope over the last N_RECENT_YEARS*12 points
+acceleration <- all_data_num %>%
+  filter(!is.na(value)) %>%
+  group_by(AREA) %>%
+  group_modify(~ {
+    y <- .x$value; x <- .x$time; n <- length(y)
+
+    # Historical OLS model
+    mod        <- lm(value ~ time, data = .x)
+    slope_hist <- coef(mod)[2]
+    ci95_hac   <- qnorm(0.975) * sqrt(diag(sandwich::vcovHAC(mod)))[2]
+
+    # Yeo-Johnson curve (RMSE criterion)
+    lambda    <- optimise_yj_rmse(x, y)
+    mu        <- mean(y); sigma <- sd(y); y_std <- (y - mu) / sigma
+    yj_trans  <- yeo.johnson(y_std, lambda)
+    fit_yj    <- lm(yj_trans ~ x)
+    y_fitted  <- mu + sigma * yeo.johnson.inverse(fitted(fit_yj), lambda)
+    rmse_ols  <- sqrt(mean((y - fitted(mod))^2))
+    rmse_yj   <- sqrt(mean((y - y_fitted)^2))
+
+    # Recent YJ trend: linear regression on the tail of the YJ curve
+    # (more stable than finite difference for noisy series)
+    n_recent          <- min(N_RECENT_YEARS * 12L, max(5L, n %/% 3L))
+    y_fitted_tail     <- tail(y_fitted, n_recent)
+    x_tail            <- tail(x, n_recent)
+    yj_slope_recent   <- coef(lm(y_fitted_tail ~ x_tail))[2]
+
+    tibble(
+      slope_hist = slope_hist * 12,   # °C/month → °C/year
+      ci95_hac   = ci95_hac   * 12,
+      yj_recent  = yj_slope_recent * 12,
+      lambda_yj  = round(lambda, 2),
+      rmse_ols   = round(rmse_ols, 4),
+      rmse_yj    = round(rmse_yj,  4)
+    )
+  }) %>%
+  ungroup()
+
+# ── Segmented linear regression (changepoint) ────────────────────────────────
+# The optimal changepoint (best_cp) that minimises the mean RMSE across all
+# areas is sought. The initial and final 15% of the series are excluded
+# (margin) to ensure enough observations in each segment.
+# The changepoint model is: value ~ trend() + pmax(0, t - t_cp),
+# where pmax(0, ...) activates the second segment from the changepoint onwards.
+n_dates    <- length(unique(all_data$date))
+margin     <- 0.15
+candidates <- sort(unique(all_data$date))[
+  ceiling(n_dates * margin):floor(n_dates * (1 - margin))]
+
+best_cp <- map_df(candidates, function(cp) {
+  fit <- all_data %>%
+    model(m = TSLM(value ~ trend() +
+                     I(pmax(0, as.numeric(date) - as.numeric(cp)))))
+  tibble(cp = cp, mean_rmse = mean(accuracy(fit)$RMSE))
+}) %>%
+  slice_min(mean_rmse, n = 1, with_ties = FALSE) %>%
+  pull(cp)
+
+model_cp <- all_data %>%
+  model(m = TSLM(value ~ trend() +
+                   I(pmax(0, as.numeric(date) - as.numeric(best_cp)))))
+
+# Extract metrics and coefficients from the changepoint model:
+#   slope1 = slope of the first segment
+#   slope2 = slope1 + pmax coefficient (slope of the second segment)
+metrics_cp <- accuracy(model_cp) %>% select(AREA, RMSE)
+coefs_cp   <- tidy(model_cp) %>%
+  group_by(AREA) %>%
+  summarise(
+    slope1 = estimate[term == "trend()"],
+    slope2 = slope1 + estimate[grepl("pmax", term)],
+    .groups = "drop"
+  )
+
+results_cp <- coefs_cp %>%
+  left_join(metrics_cp, by = "AREA") %>%
+  mutate(changepoint = best_cp) %>%
+  rename(rmse_cp = RMSE, slope2_cp = slope2) %>%
+  select(AREA, changepoint, rmse_cp, slope2_cp)
+
+# Merge YJ and changepoint results into a single table
+acceleration <- acceleration %>%
+  left_join(results_cp, by = "AREA")
+```
+
+## Results
+
+```{r table_acceleration}
+# Comparative table of the three methods (OLS, YJ-RMSE, changepoint).
+# Ratio columns (YJ/hist and CP/hist) are > 1 if there is acceleration
+# and < 1 if there is deceleration relative to the historical trend.
+acceleration %>%
+  mutate(AREA = factor(AREA, levels = area_order)) %>%
+  arrange(AREA) %>%
+  transmute(
+    AREA,
+    `RMSE (OLS)` = rmse_ols,
+    `RMSE (YJ)`  = rmse_yj,
+    `RMSE (CP)`  = round(rmse_cp, 4),
+    `YJ improvement (%)` = round((1 - rmse_yj / rmse_ols) * 100, 2),
+    `CP improvement (%)` = round((1 - rmse_cp / rmse_ols) * 100, 2),
+    `Historical ± CI95.HAC (°C/century)` = fmt_century(slope_hist, ci95_hac),
+    `YJ recent (°C/century)`   = round(yj_recent * 100, 2),
+    `CP slope2 (°C/century)`   = round(slope2_cp * 12 * 100, 2),
+    `Changepoint`              = format(changepoint, "%Y-%m"),
+    `Ratio YJ/hist.`           = round(yj_recent / slope_hist, 2),
+    `Ratio CP/hist.`           = round(slope2_cp * 12 / slope_hist, 2)
+  ) %>%
+  kable(
+    caption = paste0(
+      "Comparison of methods on the complete monthly series. ",
+      "Slopes in °C/century. ",
+      "CP = segmented regression with optimal changepoint"
+    ),
+    digits = 4
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width        = FALSE,
+    font_size         = 12
+  )
+```
+
+```{r acceleration_plot, out.width="100%", fig.width=9, fig.height=5}
+# Bar chart comparing the historical slope (OLS), the recent trend of the YJ
+# curve and the slope of the second changepoint segment.
+# Bars > historical slope → acceleration; bars < → deceleration.
+acceleration %>%
+  mutate(
+    AREA         = factor(AREA, levels = area_order),
+    slope_cp2    = slope2_cp * 12,
+    slope_hist_c = slope_hist
+  ) %>%
+  pivot_longer(
+    cols      = c(slope_hist_c, yj_recent, slope_cp2),
+    names_to  = "method",
+    values_to = "slope_value"
+  ) %>%
+  mutate(
+    method = factor(
+      method,
+      levels = c("slope_hist_c", "yj_recent", "slope_cp2"),
+      labels = c(
+        "Historical OLS",
+        "Yeo-Johnson (final trend)",
+        "Changepoint (2nd segment)"
+      )
+    )
+  ) %>%
+  ggplot(aes(x = AREA, y = slope_value * 100, fill = method)) +
+  geom_col(position = position_dodge(0.7), width = 0.6) +
+  scale_fill_manual(
+    values = c(
+      "Historical OLS"             = "grey50",
+      "Yeo-Johnson (final trend)"  = "#8B7355",
+      "Changepoint (2nd segment)"  = "#1B4965"
+    )
+  ) +
+  labs(
+    title    = "Method comparison: historical slope vs recent trend",
+    subtitle = "Complete monthly series. Slopes in °C/century",
+    x        = NULL,
+    y        = "Slope (°C/century)",
+    fill     = NULL
+  ) +
+  theme_minimal(base_size = 11, base_family = "serif") +
+  theme(
+    axis.text.x     = element_text(angle = 35, hjust = 1),
+    legend.position = "top"
+  )
+```
+
+## Discussion
+
+<div class="discussion">
+**The small improvement in RMSE reinforces the quality of the linear (OLS) fit.**
+Both the Yeo-Johnson curve and the segmented regression produce RMSE improvements
+of less than 2% in all areas. For global series, improvements range between 0.2%
+(southern hemisphere) and 1.0% (global); for Canarian stations, between 0.0% and
+1.8%. These marginal differences indicate that the simple linear regression model
+adequately captures the underlying trend: the non-linearity present in the series
+is so weak that more flexible models barely exploit it.
+
+This result has an important practical implication: since the OLS regression line
+is already a near-optimal fit, the estimated historical slopes (between +1.75 and
++3.54 °C/century, monthly series) are representative of the true trend and are not
+significantly biased by the linearity assumption.
+
+**Global series suggest a moderate acceleration.** For the global series and the
+northern hemisphere, both methods estimate a recent trend higher than the historical
+one. The Yeo-Johnson curve produces ratios of 1.27 (global) and 1.28 (northern
+hemisphere); the segmented regression, ratios of 1.07 and 1.08 respectively, with
+second-segment slopes of 3.04 and 3.67 °C/century compared to historical values of
+2.86 and 3.41 (monthly series). The agreement between both methods reinforces the
+evidence of a moderate acceleration at the planetary scale. In the southern hemisphere
+the signal is weaker (YJ ratio = 1.15, CP = 1.02), consistent with the thermal inertia
+of the oceanic hemisphere.
+
+**Canarian stations show a possible deceleration.** In contrast to the global series,
+both the Yeo-Johnson transformation and the segmented regression estimate for most
+Canarian stations a recent trend lower than the historical one. The YJ/historical
+ratios are 0.97 (Tenerife/Los Rodeos), 0.88 (Gran Canaria/Gando), 0.96 (Canary Islands)
+and 1.00 (Izaña, stable), while S.C. Tenerife presents a value close to unity (1.01),
+indicating practically stable behaviour. The segmented regression reinforces this pattern,
+with CP/historical ratios of 0.58 (Tenerife/Los Rodeos), 0.79 (Gran Canaria/Gando),
+0.80 (Canary Islands) and 0.84 (Izaña), corresponding to second-segment slopes of 1.91,
+2.81, 2.68 and 2.87 °C/century compared to historical values of 3.26, 3.54, 3.37 and
+3.41 respectively, while S.C. Tenerife shows a value of 0.96, consistent with a
+slight reduction or stability of the recent trend.
+
+This apparent deceleration in the Canary Islands, in contrast to global acceleration, is
+a result consistent across two independent methods. It could reflect regional factors such
+as changes in trade wind intensity, the influence of coastal oceanic upwelling on Canarian
+surface temperatures, or a local attenuation of warming in recent decades. However, since
+the RMSE improvement is minimal, the deceleration signal is weak and should be interpreted
+with caution.
+</div>
+
+<div class="finding">
+**Finding — Goodness of the linear fit and global-local divergence.** The small
+RMSE improvement (< 2%) obtained by more complex models validates simple linear regression
+as an adequate tool for estimating the warming trend. The two alternative methods reveal a
+divergent pattern: while global series suggest a **moderate acceleration** (YJ ratios:
+1.15–1.28; CP ratios: 1.02–1.08), Canarian stations point to a possible **deceleration**
+(YJ ratios: 0.88–1.01; CP ratios: 0.58–0.96), which could indicate the influence of
+regional factors on the local trend.
+</div>
+
+
+# Conclusions
+
+<div class="finding">
+**1. Significant warming in all areas and scales.** All 8 areas show a positive
+trend with Mann-Kendall p ≈ 0. Historical slopes (annual mean) range between
++1.75 °C/century (southern hemisphere) and +3.52 °C/century (Gran Canaria/Gando).
+The OLS–Sen agreement confirms that these results are not distorted by outliers.
+
+**2. Goodness of the linear fit validated.** The statistical reliability of the
+models, together with the comparison with the Yeo-Johnson transformation and
+segmented regression — which show RMSE improvements of less than 2% — confirms
+that simple linear regression adequately captures the underlying trend. The estimated
+historical slopes are representative and are not biased by the linearity assumption.
+
+**3. Acceleration at global scale, possible deceleration in the Canary Islands.**
+Both alternative methods agree in pointing to a moderate acceleration in global
+series (YJ ratios: 1.15–1.28; CP ratios: 1.02–1.08) and, in contrast, a possible
+deceleration in Canarian stations (YJ ratios: 0.88–1.01; CP ratios: 0.58–0.96).
+This divergence could reflect regional factors such as trade wind dynamics or
+oceanic upwelling.
+
+**4. Seasonality of warming.** Canarian stations show maximum slopes in
+spring-summer and minimum in September. The northern hemisphere presents a
+different seasonal profile with maximum slopes in winter.
+
+**5. Consistency with climate models.** The slope estimated by linear regression
+on observed data in the Canary Islands (~3.4 °C/century) is comparable to the
+projection of the ACCESS-CM2 model under the high-emissions RCP 7.0 scenario
+(3.2 °C/century; AEMET, 2024). The simplicity of the statistical model offers
+greater robustness against overfitting, at the cost of not being able to capture
+future scenarios with structural changes in emissions.
+
+**6. Robustness of the analysis.** The diagnostic battery — normality,
+homoscedasticity, autocorrelation, non-parametric estimation and recent trend —
+provides a level of statistical rigour that reinforces the reliability of the conclusions.
+</div>
+
+## Limitations
+
+**Scope of the model** — The linear regression model is the simplest possible and
+adequately captures the historical trend, but since it does not include explanatory
+variables such as greenhouse gas emissions, it cannot model future changes in the
+warming trajectory due to emissions.
+
+**Residual autocorrelation** — Present in the monthly series, corrected using the
+Newey-West HAC CI. At the annual scale, autocorrelation is marginal.
+
+**Noise at altitude** — Izaña presents R² < 0.10 in three winter months (monthly
+series). The climate signal exists at the annual scale (R² = 0.48), but the monthly
+winter variability masks it. Tenerife/Los Rodeos also presents reliability problems
+in three months, which could be due to its altitude (633 m) and orography. In both
+cases, the annual mean does provide reliable models.
+
+**Number of stations in the Canary Islands** — Data from only 4 stations in the
+Canary Islands are available. Based on the records provided by AEMET, these are
+the only ones that meet the condition of having complete historical data prior to
+1961, a necessary requirement for calculating the reference values of the
+temperature anomaly.
+
+## Acknowledgements {-}
+To María del Pino Domínguez of the Territorial Delegation in the Canary Islands of AEMET for providing data from the Canarian stations.
+
+# Bibliography
+
+Agencia Estatal de Meteorología (AEMET) (2024). Regionalised climate projections
+for the 21st century (CMIP6). Escenarios-PNACC. ACCESS-CM2 model, RegBA method.
+
+Expósito, F. J., González, A., Pérez, J. C., Díaz, J. P. and Taima, D. (2015).
+High-Resolution Future Projections of Temperature and Precipitation in the
+Canary Islands. *Journal of Climate*, 28, 7846–7856.
+
+Morice, C. P. et al. (2021). An Updated Assessment of Near-Surface Temperature
+Change from 1850: The HadCRUT5 Dataset. *Journal of Geophysical Research:
+Atmospheres*, 126, e2019JD032361. https://doi.org/10.1029/2019JD032361
+
+Mudelsee, M. (2019). Trend analysis of climate time series: A review of
+methods. *Earth-Science Reviews*, 190, 310–322.
+
+Mulomba Mukadi, P. and González-García, C. (2021). Time Series Analysis of
+Climatic Variables in Peninsular Spain. *Climate*, 9(7), 119.
+https://doi.org/10.3390/cli9070119
+
+Osborn, T. J. et al. (2021). Land Surface Air Temperature Variations across
+the Globe Updated to 2019: The CRUTEM5 Dataset. *Journal of Geophysical
+Research: Atmospheres*, 126, e2019JD032352.
+https://doi.org/10.1029/2019JD032352
+
+SITCAN — Consejería de Transición Ecológica y Energía, Gobierno de Canarias
+(2026). Climate Change Portal of the Canary Islands.
+https://cambioclimatico.sitcan.es/clima/proyecciones/proy_clima/
+
+
+
+
+# ANNEX. Impact of including 2025 in the analysis {-}
+
+Towards the end of the development of this work we gained access to 2025 data,
+which gives us the opportunity to analyse the impact of incorporating 12 additional
+months of data per area. In this section the impact of this additional year on trend
+estimates, fit quality and conclusions from the recent trend change analysis is evaluated.
+
+## Historical slopes {-}
+
+<div class="discussion">
+**Stability of estimates.** Historical slopes estimated by linear regression are
+very stable when one year of data is added. At the monthly scale, most areas
+maintain very similar values. The only appreciable variation is the northern
+hemisphere, which goes from 3.36 to 3.48 °C/century — an increase of +0.12 that
+reflects the exceptional heat recorded in 2025 at boreal latitudes.
+
+At the annual scale, variations are even smaller: global goes from 2.86 to 2.90
+°C/century (+0.04), northern hemisphere from 3.42 to 3.47 (+0.05) and southern
+hemisphere from 1.75 to 1.76 (+0.01). In Canarian stations, slopes remain
+practically unchanged or even decrease slightly: Tenerife/Los Rodeos goes from
+3.25 to 3.18 (−0.07) and the Canary Islands from 3.35 to 3.33 (−0.02). This
+stability confirms that the estimates for the period 1970–2024 were already
+representative and were not conditioned by the choice of the final year.
+
+The slight divergence between global series (which rise) and Canarian ones
+(which remain stable or decrease slightly) when adding 2025 is consistent with
+the pattern of possible recent acceleration/deceleration identified in the method
+comparison section.
+</div>
+
+## Goodness of fit {-}
+
+<div class="discussion">
+**Annual R².** The incorporation of 2025 marginally improves R² in all areas:
+global from 0.89 to 0.90, Izaña from 0.48 to 0.50, Gran Canaria/Gando from
+0.57 to 0.59 and the Canary Islands from 0.58 to 0.59. These increments indicate
+that the 2025 data point is consistent with the historical linear trend (it is not
+an outlier) and slightly reinforces the signal.
+
+**Reliability.** Reliability indicators do not change in any area at the annual
+scale: the same 6 areas that obtained ✅ OK maintain it, and the 2 with ⚠LB
+(S.C. Tenerife and Gran Canaria/Gando) retain that flag. At the monthly scale,
+the only variation is a marginal deterioration in homoscedasticity (BP > 0.05
+goes from 87.5% to 75.0% of models), suggesting that the temperature increase
+in 2025 slightly increased heteroscedasticity in some series.
+
+**Confidence intervals.** CIs remain stable or narrow when adding one year of data:
+in the annual mean, the global OLS CI remains stable at ±0.27, in the Canary Islands
+it falls from ±0.78 to ±0.75 and in Izaña from ±0.97 to ±0.94. The precision gain
+is modest but systematic.
+</div>
+
+## Trend change analysis {-}
+
+<div class="discussion">
+**Changepoint.** The optimal changepoint remains in November 1983 in both analyses,
+confirming the structural stability of this result against the addition of data at
+the tail of the series.
+
+**Reinforced global acceleration.** When incorporating 2025, the Yeo-Johnson/historical
+ratios increase slightly: global goes from 1.27 to 1.30 and the northern hemisphere
+from 1.28 to 1.31. This indicates that the 2025 data reinforce the evidence of
+acceleration at the planetary scale.
+
+**Stable Canarian deceleration.** Ratios for Canarian stations remain practically
+unchanged: Canary Islands 0.96 → 0.96, Los Rodeos 0.97 → 0.97, Gando 0.88 → 0.88.
+The signal of possible deceleration does not dissipate when one more year is added,
+which lends it greater robustness.
+
+**RMSE improvement.** The RMSE improvements from Yeo-Johnson and segmented regression
+relative to OLS remain below 2% in all areas, confirming that the conclusion about the
+goodness of the linear fit is insensitive to temporal extension.
+</div>
+
+<div class="finding">
+**Summary.** The incorporation of 2025 into the analysis does not substantially modify
+any conclusion: historical slopes are stable (variations < 0.1 °C/century), the
+changepoint remains at 1983, global acceleration is marginally reinforced and Canarian
+deceleration persists. The main effect is a narrowing of confidence intervals (greater
+precision) and a slight improvement in annual R². These results confirm the temporal
+robustness of the analysis and its insensitivity to the choice of the closing year.
+</div>
