@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://mariaalonsoleon.github.io/TemperatureAnomaly/report/analysis_extended.html">
+  <a href="https://mariaalonsoleon.github.io/TemperatureAnomaly/report/temperature_anomaly_analysis.html">
     <img src="https://img.shields.io/badge/OPEN%20INTERACTIVE%20HTML%20REPORT-Click%20here-E05C2A?style=for-the-badge&logo=googlechrome&logoColor=white">
   </a>
 </p>
