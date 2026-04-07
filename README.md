@@ -33,13 +33,15 @@
 
 ## Contents
 
-- 📊 `temperature_anomaly_global_context` → **full report (recommended reading)**  
-- 🧠 `temperature_anomaly_global_context.Rmd` → source code  
-- 📝 `OBS_018.docx` → conference paper (short version)  
-- 📁 `temperature_anomaly_2025.rds` → dataset  
-- ⚙️ `utilities.R` → helper functions  
-- 📈 `dashboard_anomalies_en.html` → interactive dashboard  
-- 🧩 `*_cache/`, `*_files/` → RMarkdown dependencies  
+- 📊 report/temperature_anomaly_analysis.html → full report (recommended reading)
+- 🧠 report/temperature_anomaly_analysis.Rmd → source code of the extended analysis
+- 📝 report/conference/OBS_018.docx → conference paper (short version)
+- 📈 dashboard/temperature_anomaly_dashboard.Rmd → interactive dashboard (Shiny / flexdashboard)
+- ⚙️ dashboard/precompute_dashboard.R → precomputation script for dashboard
+- 📁 data/temperature_anomaly_2025.rds → main dataset
+- 💾 `data/dashboard_results.rds` → precomputed model outputs for fast dashboard rendering
+- ⚙️ scripts/utilities.R → shared helper functions (used in report and dashboard)
+- 📊 figures/ → figures used in README
 
 ---
 
@@ -158,6 +160,7 @@ Render the full report:
 ```r
 rmarkdown::render("temperature_anomaly_global_context.Rmd")
 ```
+> Some `*_cache/` and `*_files/` directories may appear inside `report/` as automatically generated R Markdown rendering dependencies.
 
 ---
 
