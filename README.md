@@ -30,16 +30,14 @@
 </p>
 
 <p align="center">
-  <img src="figures/main-plot.png" width="85%">
+  <img src="figures/dashboard.gif" width="85%">
 </p>
 
 <p align="center">
-  <i>
-  Annual mean temperature anomalies (1970–2024) across global, hemispheric and Canary Islands series.<br>
-  Linear trends are shown together with 95% confidence intervals (OLS and HAC Newey-West).
-  </i>
+  <i>Interactive dashboard preview showing dynamic exploration of temperature anomaly trends.</i>
 </p>
 
+<br>
 ---
 
 ## Key findings
