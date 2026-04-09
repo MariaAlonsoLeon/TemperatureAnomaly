@@ -213,7 +213,7 @@ https://github.com/MariaAlonsoLeon/TemperatureAnomaly
 Data Scientist
 
 - 📧 maria.alonleon6@gmail.com
-- 💼 LinkedIn: your_linkedin_here
+- 💼 LinkedIn: www.linkedin.com/in/maria-alonso-leon
 - 🎓 Universidad de Las Palmas de Gran Canaria
 
 Research interests
