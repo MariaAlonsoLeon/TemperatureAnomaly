@@ -24,12 +24,6 @@
 <br>
 
 <p align="center">
-  <a href="https://www.linkedin.com/in/maria-alonso-leon/">
-    <img src="https://img.shields.io/badge/LinkedIn-View%20Profile-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn">
-  </a>
-</p>
-
-<p align="center">
   <img src="figures/dashboard.gif" width="100%">
 </p>
 
