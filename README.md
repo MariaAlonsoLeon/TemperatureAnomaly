@@ -30,7 +30,7 @@
 </p>
 
 <p align="center">
-  <img src="figures/dashboard.gif" width="85%">
+  <img src="figures/dashboard.gif" width="100%">
 </p>
 
 <p align="center">
