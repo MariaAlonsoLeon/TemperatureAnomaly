@@ -286,7 +286,7 @@ table.dataTable thead th { background: var(--azul-oscuro); color: #fff; font-wei
    ════════════════════════════════════════════════════════════════════ */
 
 .seas-shell {
-  padding: 12px 4px 4px 4px;
+  padding: 2px 2px 2px 2px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -345,38 +345,56 @@ table.dataTable thead th { background: var(--azul-oscuro); color: #fff; font-wei
 }
 .seas-facet-topbar {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 320px 1fr;
   gap: 12px;
   align-items: stretch;
+  margin-bottom: 10px;
 }
-.seas-facet-select-card {
-  background: #fff;
-  border: 1px solid #d8e2e9;
-  border-top: 4px solid var(--arena);
-  border-radius: 10px;
-  padding: 12px 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+
+seas-facet-select-card
+.seas-facet-select-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  margin-bottom: 6px;
 }
-.seas-facet-select-title { font-size: 13px; font-weight: 700; color: var(--azul-oscuro); margin-bottom: 8px; }
+
 .seas-facet-note {
-  background: #eef6f8;
-  border-left: 4px solid var(--azul-oscuro);
-  border-radius: 0 8px 8px 0;
-  padding: 10px 14px;
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: #3d4f5a;
-}
-.seas-facet-plot-card {
-  background: #fff;
+  background: linear-gradient(135deg, #f9fbfd 0%, #eef6f8 100%);
   border: 1px solid #d8e2e9;
+  border-left: 4px solid var(--azul-oscuro);
   border-radius: 10px;
-  padding: 12px 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-  overflow: auto;
+  padding: 10px 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  font-size: 12.4px;
+  line-height: 1.5;
+  color: #43535d;
 }
+
+
+.seas-facet-plot-card {
+  background: #ffffff;
+  border: 1px solid #d8e2e9;
+  border-radius: 12px;
+  padding: 12px 14px 14px 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  margin-top: 4px !important;
+  padding-top: 6px !important;
+}
+
 .seas-facet-plot-title { font-size: 14px; font-weight: 700; color: var(--azul-oscuro); margin-bottom: 2px; }
 .seas-facet-plot-legend { font-size: 11.5px; color: #7a8b96; margin-bottom: 8px; }
+
+.seas-facet-note b {
+  color: var(--azul-oscuro);
+}
+
+.seas-facet-select-card .selectize-input {
+  min-height: 38px !important;
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+  font-size: 13px !important;
+}
 
 @media (max-width: 1100px) {
   .seas-heatmap-grid    { grid-template-columns: 1fr; }
@@ -495,6 +513,292 @@ table.dataTable thead th { background: var(--azul-oscuro); color: #fff; font-wei
 @media (max-width: 700px) {
   .alt-findings-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Executive summary cards ───────────────────────────────────────── */
+.exec-summary-wrap {
+  padding: 0;
+}
+
+.exec-summary-note {
+  background: #f0f4f8;
+  border-left: 4px solid var(--azul-oscuro);
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12.8px;
+  line-height: 1.55;
+  color: #43535d;
+}
+
+.exec-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.exec-card {
+  position: relative;
+  border-radius: 10px;
+  padding: 10px 14px 7px 14px;
+  min-height: 68px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  overflow: hidden;
+  color: #ffffff;
+}
+
+.exec-card-value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.05;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.exec-card-caption {
+  font-size: 13px;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.exec-card-icon {
+  position: absolute;
+  right: 12px;
+  bottom: 6px;
+  font-size: 56px;
+  opacity: 0.60;
+  line-height: 1;
+  color: #ffffff;
+}
+
+/* colores */
+.exec-card-canary {
+  background: #1B4965;
+  color: #ffffff;
+}
+.exec-card-global {
+  background: #2C6E8A;
+  color: #111111;
+}
+.exec-card-nh {
+  background: #8B7355;
+  color: #111111;
+}
+.exec-card-sh {
+  background: #E05C2A;
+  color: #111111;
+}
+
+@media (max-width: 1200px) {
+  .exec-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .exec-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Quick diagnostics compact layout ─────────────────────────────── */
+.quickdiag-wrap {
+  height: auto;
+}
+
+.quickdiag-wrap .tab-content {
+  padding-top: 6px !important;
+}
+
+.quickdiag-wrap .tab-pane {
+  height: auto !important;
+}
+
+.quickdiag-wrap .dataTables_wrapper {
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+
+.quickdiag-note {
+  margin-top: 8px;
+  font-size: 11.8px;
+  line-height: 1.55;
+}
+
+.quickdiag-note-top {
+  background: #eef6f8;
+  border-left: 4px solid var(--azul-oscuro);
+  border-radius: 0 6px 6px 0;
+  padding: 8px 12px;
+  margin: 6px 0 8px 0;
+  font-size: 12.2px;
+  line-height: 1.55;
+  color: #42515a;
+}
+
+.quickdiag-note-bottom {
+  margin-top: 8px;
+  font-size: 11.6px;
+  line-height: 1.5;
+}
+
+.quickdiag-wrap table.dataTable tbody td {
+  vertical-align: middle;
+}
+
+.quickdiag-wrap table.dataTable tbody td:first-child {
+  font-weight: 600;
+}
+
+.quickdiag-wrap .dataTables_wrapper {
+  margin-bottom: 4px;
+  
+.quickdiag-wrap table.dataTable,
+.quickdiag-wrap .dataTables_wrapper,
+.quickdiag-wrap .dataTables_wrapper .dataTables_scroll,
+.quickdiag-wrap .dataTables_wrapper .dataTables_scrollHead,
+.quickdiag-wrap .dataTables_wrapper .dataTables_scrollHeadInner,
+.quickdiag-wrap .dataTables_wrapper .dataTables_scrollBody {
+  width: 100% !important;
+}
+
+.quickdiag-wrap .dataTables_wrapper table {
+  width: 100% !important;
+}
+}
+
+
+.alt-shell {
+  padding: 2px 2px 0 2px;
+}
+
+.alt-exec-card {
+  background: linear-gradient(135deg, #f9fbfd 0%, #eef4f8 100%);
+  border: 1px solid #d8e2e9;
+  border-left: 4px solid var(--azul-oscuro);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.alt-exec-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  margin-bottom: 6px;
+}
+
+.alt-exec-lead {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #43535d;
+}
+
+.alt-findings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.alt-finding-card {
+  position: relative;
+  border-radius: 10px;
+  padding: 12px 14px 14px 14px;
+  border: 1px solid #d8e2e9;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  background: #ffffff;
+}
+
+.alt-finding-card.green { border-top: 4px solid #2e8b57; }
+.alt-finding-card.orange { border-top: 4px solid #E05C2A; }
+.alt-finding-card.blue { border-top: 4px solid #1B4965; }
+
+.alt-finding-icon {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.alt-finding-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul-oscuro);
+  margin-bottom: 6px;
+}
+
+.alt-finding-body {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #44525c;
+}
+
+.alt-finding-tag {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tag-green  { background: #e6f4ea; color: #2e7d32; }
+.tag-orange { background: #fff0e8; color: #c85b1a; }
+.tag-blue   { background: #e9f1f6; color: #1B4965; }
+
+@media (max-width: 1100px) {
+  .alt-findings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.alt-side-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.alt-finding-card.compact {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+}
+
+.alt-finding-card.compact .alt-finding-icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-top: 2px;
+  margin-bottom: 0;
+  flex: 0 0 auto;
+}
+
+.alt-finding-card.compact .alt-finding-title {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.alt-finding-card.compact .alt-finding-body {
+  font-size: 12.2px;
+  line-height: 1.5;
+}
+
+.alt-finding-card.compact .alt-finding-tag {
+  margin-top: 8px;
+}
+
+.alt-summary-box {
+  background: linear-gradient(135deg, #f9fbfd 0%, #eef4f8 100%);
+  border: 1px solid #d8e2e9;
+  border-left: 4px solid var(--azul-oscuro);
+  border-radius: 10px;
+  padding: 8px 12px;  
+  margin-bottom: 0px;
+  font-size: 12.8px;
+  line-height: 1.6;
+  color: #43535d;
+}
+
 </style>
 
 ```{r libs}
@@ -610,37 +914,66 @@ calc_reliability_label <- function(r2, ic, slope, ad, bp, mk, lb) {
 
 # ── Plot functions ────────────────────────────────────────────────────────────
 
+area_labels <- c(
+  "GLOBAL" = "Global",
+"CANARY ISLANDS" = "Canary",
+"NORTHERN HEMISPHERE" = "NH",
+"SOUTHERN HEMISPHERE" = "SH",
+  "GRAN CANARIA/GANDO" = "Gando",
+  "IZAÑA" = "Izaña",
+  "S.C. DE TENERIFE" = "SC\nTenerife",
+  "TENERIFE/LOS RODEOS" = "Los\nRodeos"
+)
+
 plot_heatmap_slope <- function(df) {
   df %>%
-    ggplot(aes(x = period, y = AREA, fill = slope_century)) +
+    ggplot(aes(x = AREA, y = period, fill = slope_century)) +
     geom_tile(colour = "white", linewidth = 0.7) +
     geom_text(aes(label = sprintf("%.2f", slope_century)), size = 3.0, colour = "black") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1, name = "°C/century") +
+    
+    scale_x_discrete(labels = area_labels) +
+    
+    scale_fill_distiller(
+      palette = "YlOrRd",
+      direction = 1,
+      name = "Slope\n(°C/century)"
+    ) +
+    
+    coord_cartesian(clip = "off") +
+    
     labs(x = NULL, y = NULL) +
+    
     theme_minimal(base_size = 11, base_family = "sans") +
     theme(
-      axis.text.x  = element_text(angle = 40, hjust = 1, size = 9),
-      axis.text.y  = element_text(size = 9),
-      panel.grid   = element_blank(),
+      axis.text.x = element_text(size = 9, face = "bold", angle=45),
+      axis.text.y = element_text(size = 9),
+      panel.grid = element_blank(),
       legend.position = "right",
-      plot.margin  = margin(4, 4, 4, 4)
+      plot.margin = margin(5, 10, 35, 5)
     )
 }
 
 plot_heatmap_reliability <- function(df) {
   df %>%
-    ggplot(aes(x = month_name, y = AREA, fill = reliability_num, label = reliability_label)) +
+    ggplot(aes(x = AREA, y = month_name, fill = reliability_num, label = reliability_label)) +
     geom_tile(colour = "white", linewidth = 0.7) +
     geom_text(size = 2.9, colour = "black") +
+    
+    scale_x_discrete(labels = area_labels) +
+    
     scale_fill_gradient(low = "chartreuse1", high = "firebrick1") +
+    
+    coord_cartesian(clip = "off") +
+    
     labs(x = NULL, y = NULL) +
+    
     theme_minimal(base_size = 11, base_family = "sans") +
     theme(
-      axis.text.x  = element_text(angle = 40, hjust = 1, size = 9),
-      axis.text.y  = element_text(size = 9),
-      panel.grid   = element_blank(),
+      axis.text.x = element_text(size = 9, face = "bold", , angle=45),
+      axis.text.y = element_text(size = 9),
+      panel.grid = element_blank(),
       legend.position = "none",
-      plot.margin  = margin(4, 4, 4, 4)
+      plot.margin = margin(5, 10, 35, 5)
     )
 }
 
@@ -661,12 +994,11 @@ plot_facet_monthly <- function(data_ts, area_sel) {
       X        <- model.matrix(mod)
       se_hac   <- sqrt(rowSums((X %*% V_hac) * X))
       tc       <- qt(0.975, df = mod$df.residual)
+
       tibble(
         date   = .x$date,
         value  = .x$value,
         fit    = pred_ols[, "fit"],
-        ols_lo = pred_ols[, "lwr"],
-        ols_hi = pred_ols[, "upr"],
         hac_lo = pred_ols[, "fit"] - tc * se_hac,
         hac_hi = pred_ols[, "fit"] + tc * se_hac
       )
@@ -683,22 +1015,21 @@ plot_facet_monthly <- function(data_ts, area_sel) {
   }
 
   ggplot(bands_area, aes(x = date)) +
-    geom_ribbon(aes(ymin = hac_lo, ymax = hac_hi), alpha = 0.18, fill = "#E05C2A") +
-    geom_line(aes(y = value), linewidth = 0.35, alpha = 0.50, colour = "grey55") +
-    geom_line(aes(y = fit), colour = "#1B4965", linewidth = 0.9) +
-    facet_wrap(~ month_name, ncol = 4, scales = "free_y") +
+    geom_ribbon(aes(ymin = hac_lo, ymax = hac_hi), alpha = 0.16, fill = "#E05C2A") +
+    geom_line(aes(y = value), linewidth = 0.28, alpha = 0.50, colour = "grey55") +
+    geom_line(aes(y = fit), colour = "#1B4965", linewidth = 0.80) +
+    facet_wrap(~ month_name, ncol = 4) +
     labs(x = NULL, y = "Anomaly (°C)") +
-    theme_minimal(base_size = 10, base_family = "sans") +
+    theme_minimal(base_size = 9.8, base_family = "sans") +
     theme(
-      strip.text       = element_text(face = "bold", size = 9, colour = "#1B4965"),
-      strip.background = element_rect(fill = "#eef4f8", colour = NA),
+      strip.text       = element_text(face = "bold", size = 8.8, colour = "#1B4965"),
       panel.grid.minor = element_blank(),
-      panel.grid.major = element_line(colour = "#e8edf2"),
-      axis.text.x      = element_text(size = 7),
-      axis.text.y      = element_text(size = 7),
+      axis.text.x      = element_text(size = 6.8),
+      axis.text.y      = element_text(size = 6.8),
       axis.title.y     = element_text(size = 9),
-      panel.spacing    = unit(0.6, "lines"),
-      plot.margin      = margin(4, 6, 4, 8)
+      panel.spacing.x  = unit(0.45, "lines"),
+      panel.spacing.y  = unit(0.55, "lines"),
+      plot.margin      = margin(2, 4, 2, 4)
     )
 }
 ```
@@ -801,13 +1132,11 @@ htmltools::tagList(
           <div>
             <div class="about-copy-title">Project overview</div>
             <p>
-              This dashboard analyses temperature anomaly trends for the global mean,
-              both hemispheres, four long-record AEMET stations, and a regional Canary Islands mean,
-              combining monthly, annual, and month-specific perspectives to capture both
+              This dashboard analyses, using linear regression models, temperature anomaly trends for the world global mean, both hemispheres, four long-record AEMET stations, and a regional Canary Islands mean, combining monthly, annual, and month-specific perspectives to capture both
               <b>long-term warming intensity</b> and <b>seasonal structure</b> over the period <b>1970–2024</b>.
             </p>
             <p>
-              A temperature anomaly is the <b>difference between the observed temperature and the reference-period mean</b> for the same month.
+              A temperature anomaly is the <b>difference between the observed temperature and the reference-period mean (1961–1990)</b> for the same month.
             </p>
             <p>
               The analysis uses data from <b>HadCRUT5</b> and <b>AEMET</b> and is supported by
@@ -853,7 +1182,7 @@ htmltools::tagList(
 
   htmltools::HTML('
           <div class="about-map-caption">
-            Four long-term AEMET stations selected to represent contrasting coastal and high-altitude environments.
+            Four long-term AEMET stations representing contrasting environments; circle size is proportional to altitude.
           </div>
         </div>
       </div>
@@ -871,47 +1200,55 @@ htmltools::tagList(
 Executive Summary
 =====================================
 
-Row {data-height=130}
+Row {data-height=125}
 -------------------------------------
 
-### 🌴 Canary Islands
+### {.no-title}
 
 ```{r}
-valueBox(value   = paste0(round(kpi_canary_annual * 100, 2), " °C/century"),
-         caption = "Annual slope · Canary Islands",
-         icon    = "fa-thermometer-half", color = "#1B4965")
-```
+htmltools::HTML(paste0(
+  "<div class='exec-summary-wrap'>",
 
-### 🌍 Global
+    "<div class='exec-summary-note'>",
+      "<b>Indicator:</b> annual linear regression slope based on annual mean temperature anomalies.",
+    "</div>",
 
-```{r}
-valueBox(value   = paste0(round(kpi_global_annual * 100, 2), " °C/century"),
-         caption = "Annual slope · Global",
-         icon    = "fa-globe", color = "#2C6E8A")
-```
+    "<div class='exec-summary-grid'>",
 
-### 🧭 Northern Hemisphere
 
-```{r}
-valueBox(value   = paste0(round(kpi_nh_annual * 100, 2), " °C/century"),
-         caption = "Annual slope · Northern Hemisphere",
-         icon    = "fa-line-chart", color = "#8B7355")
-```
+      "<div class='exec-card exec-card-global'>",
+        "<div class='exec-card-value'>", round(kpi_global_annual * 100, 2), " °C/century</div>",
+        "<div class='exec-card-caption'>Global</div>",
+        "<div class='exec-card-icon'>🌍</div>",
+      "</div>",
 
-### 🧭 Southern Hemisphere
+      "<div class='exec-card exec-card-nh'>",
+        "<div class='exec-card-value'>", round(kpi_nh_annual * 100, 2), " °C/century</div>",
+        "<div class='exec-card-caption'>Northern Hemisphere</div>",
+        "<div class='exec-card-icon'>🧭</div>",
+      "</div>",
 
-```{r}
-valueBox(
-  value   = paste0(round(kpi_sh_annual * 100, 2), " °C/century"),
-  caption = "Annual slope · Southern Hemisphere",
-  icon    = "fa-arrow-down", color = "#E05C2A"
-)
+      "<div class='exec-card exec-card-sh'>",
+        "<div class='exec-card-value'>", round(kpi_sh_annual * 100, 2), " °C/century</div>",
+        "<div class='exec-card-caption'>Southern Hemisphere</div>",
+        "<div class='exec-card-icon'>🧭</div>",
+      "</div>",
+  
+      "<div class='exec-card exec-card-canary'>",
+        "<div class='exec-card-value'>", round(kpi_canary_annual * 100, 2), " °C/century</div>",
+        "<div class='exec-card-caption'>Canary Islands</div>",
+        "<div class='exec-card-icon'>🌴</div>",
+      "</div>",
+
+    "</div>",
+  "</div>"
+))
 ```
 
 Row
 -------------------------------------
 
-### Annual slope comparison by area {data-width=600}
+### Annual regression slope by area {data-width=600}
 
 ```{r}
 bars_data <- results_annual %>%
@@ -939,13 +1276,34 @@ plot_ly(data=bars_data, x=~slope_century, y=~AREA, type="bar", orientation="h",
 
 ```{r}
 diagnostic_summary_t <- diagnostic_summary %>%
-  mutate(scale = as.character(scale)) %>%
+  mutate(
+    scale = as.character(scale),
+    scale = recode(
+      scale,
+      "Full monthly" = "Full monthly",
+      "Annual" = "Annual",
+      "By month" = "By month"
+    )
+  ) %>%
   tibble::column_to_rownames("scale") %>%
   t() %>%
   as.data.frame(check.names = FALSE) %>%
-  tibble::rownames_to_column("Metric")
+  tibble::rownames_to_column("Metric") %>%
+  mutate(
+    Metric = recode(
+      Metric,
+      "AD > 0.05 (%)" = "Normal residuals (%)",
+      "BP > 0.05 (%)" = "Homoscedastic residuals (%)",
+      "LB > 0.05 (%)" = "No autocorrelation (%)",
+      "MK < 0.05 (%)" = "Significant MK trend (%)",
+      "Mean R²" = "Mean R²",
+      "Mean slope (°C/century)" = "Mean slope (°C/century)",
+      "CI95 (°C/century)" = "Mean CI95 width (°C/century)",
+      "CI95.HAC (°C/century)" = "Mean HAC CI95 width (°C/century)"
+    )
+  )
 
-div(class = "tabset-fill", tagList(
+div(class = "quickdiag-wrap", tagList(
   tabsetPanel(
     tabPanel("📋 Summary table",
       tagList(
@@ -953,30 +1311,63 @@ div(class = "tabset-fill", tagList(
           table_annual_dashboard,
           rownames = FALSE,
           class = "compact stripe",
-          options = list(paging=FALSE, searching=FALSE, info=FALSE,
-                         ordering=TRUE, autoWidth=TRUE, scrollX=FALSE)
+          fillContainer = FALSE,
+          options = list(
+            paging = FALSE,
+            searching = FALSE,
+            info = FALSE,
+            ordering = TRUE,
+            autoWidth = TRUE,
+            scrollX = FALSE
+          )
         ),
         tags$div(
-          class = "caja-metodo nota-bajo-tabset",
-          HTML("<b>HAC CI:</b> corrected for autocorrelation and heteroscedasticity (Newey-West).
-               <b>Sen slope:</b> robust Theil-Sen estimator, resistant to outliers.
-               Full indicator guide available in the <b>About</b> tab.")
+          class = "caja-metodo quickdiag-note-bottom",
+          HTML(
+            "<b>Column guide:</b>
+             <b>AREA</b> = study area;
+             <b>R²</b> = variance explained by the linear trend;
+             <b>OLS ± CI95.HAC</b> = OLS slope with Newey–West 95% CI;
+             <b>Sen ± CI95</b> = robust Theil–Sen slope;
+             <b>reliability</b> = diagnostic flag of model quality."
+          )
         )
       )
     ),
+
     tabPanel("🔬 Diagnostics",
-      DT::datatable(
-        diagnostic_summary_t,
-        rownames = FALSE,
-        class = "compact stripe",
-        options = list(paging=FALSE, searching=FALSE, info=FALSE,
-                       ordering=FALSE, autoWidth=TRUE, scrollX=TRUE)
-      ) %>% DT::formatStyle("Metric", fontWeight = "bold")
+  tagList(
+    DT::datatable(
+  diagnostic_summary_t,
+  rownames = FALSE,
+  class = "compact stripe",
+  fillContainer = FALSE,
+  width = "100%",
+  options = list(
+    paging = FALSE,
+    searching = FALSE,
+    info = FALSE,
+    ordering = FALSE,
+    autoWidth = FALSE,
+    scrollX = TRUE
+  )
+) %>%
+  DT::formatStyle("Metric", fontWeight = "bold"),
+
+    tags$div(
+      class = "caja-metodo quickdiag-note-bottom",
+      HTML(
+        "<b>Guide:</b> Columns compare analysis scales.
+         Higher percentages indicate better diagnostic performance,
+         while CI width summarises uncertainty in trend estimates."
+      )
     )
   )
-))
+)
+    )
+  )
+)
 ```
-
 
 <!-- =====================================================================
      TAB 2 – TRENDS
@@ -1098,16 +1489,25 @@ Seasonality
 ```{r}
 output$heatmap_slope_plot <- renderPlot({
   plot_heatmap_slope(heatmap_slope_data)
-}, res = 96)
+}, res = 110)
 
 output$heatmap_reliability_plot <- renderPlot({
   plot_heatmap_reliability(heatmap_reliability_data)
-}, res = 96)
+}, res = 110)
 
-output$facet_monthly_plot <- renderPlot({
+output$facet_monthly_plot <- renderPlotly({
   req(input$area_month)
-  plot_facet_monthly(all_data, input$area_month)
-}, res = 96)
+
+  p <- plot_facet_monthly(all_data, input$area_month)
+
+  ggplotly(p, tooltip = c("x", "y")) %>%
+    layout(
+      margin = list(l = 60, r = 20, t = 20, b = 30),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor  = "rgba(0,0,0,0)"
+    ) %>%
+    config(displayModeBar = FALSE)
+})
 
 output$facet_title <- renderText({
   req(input$area_month)
@@ -1131,12 +1531,10 @@ tabsetPanel(
       div(class = "seas-banner",
         div(class = "seas-banner-icon", "🗓️"),
         div(class = "seas-banner-text",
-          HTML("<b>Does warming depend on the time of year?</b> Yes — and it varies by location.
-               The left map shows how fast each area–month combination is warming (°C per century).
-               The right map flags months where the statistical fit is less reliable.
-               <b>Key takeaway:</b> Canarian stations warm faster in spring–summer; the Northern Hemisphere
-               shows its strongest signal in winter. Reliability issues are concentrated in
-               Izaña and Los Rodeos during winter months.")
+          HTML("<b>Seasonal warming varies by location.</b>
+Left: warming rate (°C/century). Right: model reliability.
+<b>Key:</b> Canary Islands peak in spring–summer; Northern Hemisphere in winter.
+Lower reliability appears mainly in Izaña and Los Rodeos during winter.")
         )
       ),
 
@@ -1144,22 +1542,22 @@ tabsetPanel(
       div(class = "seas-heatmap-grid",
 
         div(class = "seas-hm-card",
-          div(class = "seas-hm-title", "Warming intensity"),
-          div(class = "seas-hm-subtitle",
-              "OLS slope (°C/century) per area and calendar month — darker orange = faster warming"),
-          div(class = "seas-hm-plot-wrap",
-            plotOutput("heatmap_slope_plot", height = "420px", width = "100%")
-          )
-        ),
+  div(class = "seas-hm-title", "Warming intensity"),
+  div(class = "seas-hm-subtitle",
+      "OLS slope (°C/century) by month and area — darker orange indicates faster warming"),
+  div(class = "seas-hm-plot-wrap",
+    plotOutput("heatmap_slope_plot", height = "100%", width = "100%")
+  )
+),
 
-        div(class = "seas-hm-card",
-          div(class = "seas-hm-title", "Statistical reliability"),
-          div(class = "seas-hm-subtitle",
-              "Green = model OK · Red = one or more diagnostic warnings — check the About tab for codes"),
-          div(class = "seas-hm-plot-wrap",
-            plotOutput("heatmap_reliability_plot", height = "420px", width = "100%")
-          )
-        )
+div(class = "seas-hm-card",
+  div(class = "seas-hm-title", "Statistical reliability"),
+  div(class = "seas-hm-subtitle",
+      "Green = model OK · Red = one or more diagnostic warnings"),
+  div(class = "seas-hm-plot-wrap",
+    plotOutput("heatmap_reliability_plot", height = "100%", width = "100%")
+  )
+)
       )
     )
   ),
@@ -1188,21 +1586,20 @@ tabsetPanel(
 
       # Plot card — altura adaptativa con scroll
       div(class = "seas-facet-plot-card",
-        div(class = "seas-facet-plot-title", textOutput("facet_title", inline = TRUE)),
-        div(class = "seas-facet-plot-legend",
-            "Grey: observed · Blue: OLS trend · Orange band: 95% HAC confidence interval"),
-        div(style = "overflow-y: auto;",
-          plotOutput("facet_monthly_plot", height = "680px", width = "100%")
-        )
+  div(class = "seas-facet-plot-title", textOutput("facet_title", inline = TRUE)),
+  div(class = "seas-facet-plot-legend",
+      "Grey: observed · Blue: OLS trend · Orange band: 95% HAC confidence interval"),
+  plotlyOutput("facet_monthly_plot", height = "420px", width = "100%")
+)
       )
     )
   )
-)
+
 ```
 
 
 <!-- =====================================================================
-     TAB 4 – ALTERNATIVE MODELS  (rediseñado)
+     TAB 4 – ALTERNATIVE MODELS  (simplified)
      ===================================================================== -->
 
 Alternative Models
@@ -1211,183 +1608,152 @@ Alternative Models
 ```{r alt_flags, include=FALSE}
 has_yj <- nrow(acceleration) > 0 &&
   all(c("AREA","slope_hist","yj_recent","rmse_ols","rmse_yj") %in% names(acceleration))
+
 has_cp <- nrow(acceleration) > 0 &&
   all(c("slope2_cp","rmse_cp","changepoint") %in% names(acceleration))
 ```
 
-Row
+Row {data-height=72}
 -------------------------------------
 
 ### {.no-title}
 
 ```{r}
 if (has_yj) {
+  htmltools::HTML(paste0(
+    "<div class='alt-summary-box'>",
+      "<b>Summary.</b> Alternative models were used to test whether warming departs meaningfully from linearity. ",
+      "Fit improvements are <b>below 2%</b> in all areas, so the linear model remains adequate. ",
+      "Both methods suggest <b>moderate recent acceleration</b> at global scale and a <b>possible weaker recent rate</b> in the Canary Islands. ",
+      "The common segmented-regression breakpoint is located around <b>", kpi_changepoint, "</b>.",
+    "</div>"
+  ))
+} else {
+  htmltools::HTML("<div class='caja-discusion'>Alternative models not available in this run.</div>")
+}
+```
 
-  # ── Pre-compute ratio data ───────────────────────────────────────────────
-  ratio_data <- acceleration %>%
-    mutate(
-      AREA     = factor(AREA, levels = area_order),
-      ratio_yj = round(yj_recent / slope_hist, 2),
-      ratio_cp = if (has_cp) round(slope2_cp * 12 / slope_hist, 2) else NA_real_
-    ) %>%
-    arrange(AREA)
 
-  pill <- function(r) {
-    if (is.na(r)) return("<span style='color:#aaa'>—</span>")
-    cls <- if (r > 1.05) "ratio-accel" else if (r < 0.95) "ratio-decel" else "ratio-stable"
-    paste0("<span class='ratio-pill ", cls, "'>", r, "</span>")
-  }
+Row {data-height=300}
+-------------------------------------
 
-  ratio_rows <- ratio_data %>%
-    pmap_chr(function(AREA, ratio_yj, ratio_cp, ...) {
-      paste0("<tr><td>", AREA, "</td>",
-             "<td style='text-align:center'>", pill(ratio_yj), "</td>",
-             if (has_cp) paste0("<td style='text-align:center'>", pill(ratio_cp), "</td>") else "",
-             "</tr>")
-    }) %>%
-    paste(collapse = "")
+### Historical vs. recent slope by area
 
-  header_cp <- if (has_cp) "<th>CP / hist.</th>" else ""
-
-  htmltools::HTML(paste0('
-  <div class="alt-shell">
-
-    <!-- ── Resumen ejecutivo ──────────────────────────────────────── -->
-    <div class="alt-exec-card">
-      <div class="alt-exec-title">What are alternative models and why do they matter?</div>
-      <div class="alt-exec-lead">
-        The main analysis assumes warming is <em>constant and linear</em> over time. Here we test two
-        alternatives that allow the trend to <strong>accelerate, slow down, or break</strong>:
-        <strong>Yeo-Johnson</strong> (captures a gradual curve) and <strong>Changepoint / segmented regression</strong>
-        (detects an abrupt break point in the trend). If these models do not improve the fit by more than 2%,
-        the linear model is adequate — which is what we find for all areas.
-      </div>
-    </div>
-
-    <!-- ── Tres hallazgos clave ───────────────────────────────────── -->
-    <div class="alt-findings-grid">
-
-      <div class="alt-finding-card green">
-        <div class="alt-finding-icon">✅</div>
-        <div class="alt-finding-title">Linear model is sufficient</div>
-        <div class="alt-finding-body">
-          Neither alternative model improves RMSE by more than <b>2%</b> in any area.
-          This means the long-run warming trend is well captured by a straight line — no need
-          for more complex models to describe the overall pattern.
-        </div>
-        <span class="alt-finding-tag tag-green">Max. RMSE improvement: ',
-        round(kpi_max_improvement, 2), '%</span>
-      </div>
-
-      <div class="alt-finding-card orange">
-        <div class="alt-finding-icon">🌍</div>
-        <div class="alt-finding-title">Global warming is accelerating</div>
-        <div class="alt-finding-body">
-          Both methods agree: the recent warming rate for the globe and Northern Hemisphere is
-          <b>~25–28% higher</b> than the historical average.
-          The breakpoint occurred around <b>', kpi_changepoint, '</b>.
-          In plain terms: warming is speeding up at planetary scale.
-        </div>
-        <span class="alt-finding-tag tag-orange">YJ ratio ≈ 1.27–1.28 · CP ratio ≈ 1.07–1.08</span>
-      </div>
-
-      <div class="alt-finding-card blue">
-        <div class="alt-finding-icon">🏝️</div>
-        <div class="alt-finding-title">Canary Islands: possible slowdown</div>
-        <div class="alt-finding-body">
-          Canarian stations show <b>ratios below 1</b> in both methods (0.58–0.96),
-          suggesting the recent warming rate is somewhat <em>lower</em> than the historical average.
-          The signal is weak but consistent — possibly linked to <b>trade wind variability</b>
-          or <b>oceanic upwelling</b> effects.
-        </div>
-        <span class="alt-finding-tag tag-blue">Weak signal · RMSE improvement &lt; 2%</span>
-      </div>
-
-    </div>
-
-    <!-- ── Plots + tabla de ratios ────────────────────────────────── -->
-    <div class="alt-plots-grid">
-
-      <!-- Gráfico de barras -->
-      <div class="alt-plot-card">
-        <div class="alt-plot-title">Historical vs. recent slope by area</div>
-        <div class="alt-plot-subtitle">
-          Bars extending beyond the blue (Historical OLS) indicate acceleration;
-          bars falling short indicate a slowdown.
-        </div>
-  '))
-
-  # ── Gráfico de barras ──────────────────────────────────────────────────
+```{r}
+if (has_yj) {
   plot_data <- acceleration %>%
     mutate(
       AREA = factor(AREA, levels = rev(area_order)),
-      `Historical OLS`          = slope_hist * 100,
-      `Yeo-Johnson (recent)`    = yj_recent * 100,
-      `Changepoint (segment 2)` = if ("slope2_cp" %in% names(.)) slope2_cp * 12 * 100 else NA_real_
+      `Historical OLS` = slope_hist * 100,
+      `Yeo-Johnson`    = yj_recent * 100,
+      `Changepoint`    = if ("slope2_cp" %in% names(.)) slope2_cp * 12 * 100 else NA_real_
     ) %>%
-    select(AREA, `Historical OLS`, `Yeo-Johnson (recent)`, `Changepoint (segment 2)`) %>%
+    select(AREA, `Historical OLS`, `Yeo-Johnson`, `Changepoint`) %>%
     pivot_longer(cols = -AREA, names_to = "method", values_to = "slope") %>%
     filter(!is.na(slope))
 
-  print(
-    ggplot(plot_data, aes(x = slope, y = AREA, fill = method)) +
-      geom_col(position = position_dodge(width = 0.72), width = 0.62) +
-      geom_vline(xintercept = 0, linewidth = 0.4, colour = "grey60") +
-      scale_fill_manual(values = c(
-        "Historical OLS"          = "#1B4965",
-        "Yeo-Johnson (recent)"    = "#E05C2A",
-        "Changepoint (segment 2)" = "#2C6E8A"
-      )) +
-      labs(x = "°C/century", y = NULL, fill = NULL) +
-      theme_minimal(base_size = 11, base_family = "sans") +
-      theme(
-        panel.grid.minor  = element_blank(),
-        panel.grid.major.y = element_blank(),
-        axis.text.y       = element_text(face = "bold", size = 10),
-        legend.position   = "top",
-        legend.text       = element_text(size = 10),
-        plot.margin       = margin(4, 8, 4, 4)
+  ggplot(plot_data, aes(x = slope, y = AREA, fill = method)) +
+    geom_col(position = position_dodge(width = 0.72), width = 0.60) +
+    geom_vline(xintercept = 0, linewidth = 0.35, colour = "#8a8a8a") +
+    scale_fill_manual(
+      values = c(
+        "Historical OLS" = "#1B4965",
+        "Yeo-Johnson"    = "#E05C2A",
+        "Changepoint"    = "#2C6E8A"
       )
+    ) +
+    labs(
+      title = "Historical vs. recent warming rate by area",
+      subtitle = "Recent estimates above the historical rate indicate acceleration; lower values indicate slowdown",
+      x = "Slope (°C/century)",
+      y = NULL,
+      fill = NULL
+    ) +
+    theme_minimal(base_size = 11, base_family = "sans") +
+    theme(
+      panel.grid.minor = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.major.x = element_line(colour = "#e6e6e6", linewidth = 0.45),
+      panel.background = element_rect(fill = "white", colour = NA),
+      plot.background = element_rect(fill = "white", colour = NA),
+      axis.text.y = element_text(face = "bold", size = 8.2, colour = "#444444"),
+      axis.text.x = element_text(size = 9.5, colour = "#444444"),
+      axis.title.x = element_text(size = 10.5, face = "bold"),
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.text = element_text(size = 9.2),
+      legend.key.size = unit(0.42, "cm"),
+      legend.spacing.x = unit(0.20, "cm"),
+      plot.title = element_text(face = "bold", size = 12.5, colour = "#1B4965", hjust = 0.5),
+      plot.subtitle = element_text(size = 9.6, colour = "#666666", hjust = 0.5),
+      plot.margin = margin(2, 8, 2, 2)
+    ) +
+    guides(fill = guide_legend(nrow = 1, byrow = TRUE))
+}
+```
+
+### Detailed comparison table
+
+```{r}
+if (has_yj) {
+  table_alt_display <- acceleration %>%
+    mutate(
+      AREA = factor(AREA, levels = area_order),
+
+      RMSE_OLS = round(rmse_ols, 4),
+      RMSE_YJ  = round(rmse_yj, 4),
+      RMSE_CP  = round(rmse_cp, 4),
+
+      YJ_imp = round((1 - rmse_yj / rmse_ols) * 100, 2),
+      CP_imp = round((1 - rmse_cp / rmse_ols) * 100, 2),
+
+      Hist = fmt_century(slope_hist, ci95_hac),
+      YJ   = round(yj_recent * 100, 2),
+      CP   = round(slope2_cp * 12 * 100, 2),
+
+      YJ_ratio = round(yj_recent / slope_hist, 2),
+      CP_ratio = round(slope2_cp * 12 / slope_hist, 2)
+    ) %>%
+    arrange(AREA) %>%
+    select(
+      AREA,
+      RMSE_OLS, RMSE_YJ, RMSE_CP,
+      YJ_imp, CP_imp,
+      Hist,
+      YJ, CP,
+      YJ_ratio, CP_ratio
+    )
+
+  colnames(table_alt_display) <- c(
+    "Area",
+    "RMSE<br>(OLS)", "RMSE<br>(YJ)", "RMSE<br>(CP)",
+    "YJ<br>imp (%)", "CP<br>imp (%)",
+    "Historical<br>(±CI)",
+    "YJ<br>(°C/c)", "CP<br>(°C/c)",
+    "YJ<br>/hist.", "CP<br>/hist."
   )
 
-  htmltools::HTML(paste0('
-      </div>
-
-      <!-- Tabla de ratios + nota RMSE -->
-      <div class="alt-table-card">
-        <div class="alt-table-title">Ratio: recent rate ÷ historical rate</div>
-        <div class="alt-table-subtitle">
-          A ratio of 1.27 means warming is 27% faster now than the long-run average.
-          A ratio of 0.80 means it is 20% slower.
-        </div>
-
-        <table class="alt-ratio-table">
-          <thead><tr>
-            <th>Area</th>
-            <th>YJ / hist.</th>
-            ', header_cp, '
-          </tr></thead>
-          <tbody>', ratio_rows, '</tbody>
-        </table>
-
-        <div style="margin-top:10px; font-size:11.5px; color:#888">
-          <span class="ratio-pill ratio-accel">accel &gt;1.05</span>
-          <span class="ratio-pill ratio-stable">stable ≈1</span>
-          <span class="ratio-pill ratio-decel">decel &lt;0.95</span>
-        </div>
-
-        <div class="alt-rmse-note" style="margin-top:14px">
-          <b>RMSE check:</b> all alternative models improve fit by &lt;2% over OLS,
-          confirming that the extra complexity is not justified. The linear model is the
-          right choice for describing the full 1970–2024 period.
-        </div>
-      </div>
-
-    </div><!-- /.alt-plots-grid -->
-  </div><!-- /.alt-shell -->
-  '))
-
-} else {
-  htmltools::HTML("<div class='caja-discusion'>Alternative models not available in this run.</div>")
+  DT::datatable(
+    table_alt_display,
+    escape = FALSE,
+    rownames = FALSE,
+    class = "compact stripe hover",
+    options = list(
+      paging = FALSE,
+      searching = FALSE,
+      info = FALSE,
+      ordering = FALSE,
+      autoWidth = TRUE,
+      scrollX = FALSE
+    )
+  ) %>%
+    DT::formatStyle(
+      columns = names(table_alt_display),
+      fontSize = "11.5px"
+    ) %>%
+    DT::formatStyle(
+      "Area",
+      fontWeight = "bold"
+    )
 }
 ```
