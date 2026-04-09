@@ -1,6 +1,10 @@
 # Temperature Anomaly Analysis in the Canary Islands in a Global Context (1970–2024)
 
 <p align="center">
+  <b>Reproducible research project combining statistical rigor, climate data analysis, and applied modeling.</b>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white">
   <img src="https://img.shields.io/badge/Climate-Temperature%20Analysis-1b4965?style=flat-square">
   <img src="https://img.shields.io/badge/Reproducible-Yes-2a9d8f?style=flat-square">
@@ -18,6 +22,12 @@
 </p>
 
 <br>
+
+<p align="center">
+  <a href="https://www.linkedin.com/in/maria-alonso-leon/">
+    <img src="https://img.shields.io/badge/LinkedIn-View%20Profile-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn">
+  </a>
+</p>
 
 <p align="center">
   <img src="figures/main-plot.png" width="85%">
@@ -213,7 +223,7 @@ https://github.com/MariaAlonsoLeon/TemperatureAnomaly
 Data Scientist
 
 - 📧 maria.alonleon6@gmail.com
-- 💼 LinkedIn: www.linkedin.com/in/maria-alonso-leon
+- 💼 LinkedIn: [María Alonso León](https://www.linkedin.com/in/maria-alonso-leon)
 - 🎓 Universidad de Las Palmas de Gran Canaria
 
 Research interests
@@ -226,7 +236,10 @@ Research interests
 
 ### License
 
-- Code → MIT License
-- Documentation & figures → CC BY 4.0
+This repository is released under the **MIT License** for code.
 
-Third-party data (AEMET, HadCRUT5, etc.) remain subject to their respective licenses.
+Documentation, figures, and accompanying materials are distributed under the **Creative Commons Attribution 4.0 (CC BY 4.0)** license.
+
+Third-party data (e.g., AEMET, HadCRUT5) remain subject to their original licenses and are not redistributed under the terms of this repository.
+
+If you use this work, please provide appropriate attribution.
