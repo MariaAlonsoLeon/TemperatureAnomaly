@@ -1623,6 +1623,8 @@ if (has_yj) {
   htmltools::HTML(paste0(
     "<div class='alt-summary-box'>",
       "<b>Summary.</b> Alternative models were used to test whether warming departs meaningfully from linearity. ",
+      "<b>Yeo-Johnson</b> allows a smooth non-linear reshaping of the series and provides a recent-rate estimate, ",
+      "while <b>segmented regression</b> identifies a possible breakpoint and fits a second linear segment after it. ",
       "Fit improvements are <b>below 2%</b> in all areas, so the linear model remains adequate. ",
       "Both methods suggest <b>moderate recent acceleration</b> at global scale and a <b>possible weaker recent rate</b> in the Canary Islands. ",
       "The common segmented-regression breakpoint is located around <b>", kpi_changepoint, "</b>.",
