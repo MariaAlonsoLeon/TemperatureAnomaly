@@ -12,13 +12,8 @@
 
 <p align="center">
   <a href="https://mariaalonsoleon.github.io/TemperatureAnomaly/report/temperature_anomaly_analysis.html">
-    <img src="https://img.shields.io/badge/OPEN%20INTERACTIVE%20HTML%20REPORT-Click%20here-E05C2A?style=for-the-badge&logo=googlechrome&logoColor=white">
+    <img src="https://img.shields.io/badge/VIEW%20FULL%20REPORT-Interactive%20HTML-E05C2A?style=for-the-badge&logo=googlechrome&logoColor=white">
   </a>
-</p>
-
-<p align="center">
-  <b>👉 Open the full interactive report directly in your browser</b><br>
-  <sub>No download required</sub>
 </p>
 
 <br>
@@ -28,9 +23,11 @@
 </p>
 
 <p align="center">
-  <i>Interactive dashboard preview showing dynamic exploration of temperature anomaly trends.</i>
+  <i>
+  Interactive dashboard preview showing dynamic exploration of temperature anomaly trends.<br>
+  An R Markdown implementation of this dashboard is included in this GitHub repository.
+  </i>
 </p>
-
 <br>
 
 ---
@@ -38,7 +35,7 @@
 ## Key findings
 
 > 🌍 **Consistent warming across all regions (1970–2024)**  
-> 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere**  
+> 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere (~3.4 °C/century)**
 > 📈 Linear trends provide a **robust and stable description**  
 > ⚖️ Non-linear models improve fit by **< 2% → linearity holds**  
 > 🔍 Evidence of **global acceleration vs possible regional deceleration**
@@ -47,9 +44,10 @@
 
 ## Contents
 
-- 📊 report/temperature_anomaly_analysis.html → full report (recommended reading)
+- 📊 report/temperature_anomaly_analysis.html → full report (interactive HTML, recommended reading)
 - 🧠 report/temperature_anomaly_analysis.Rmd → source code of the extended analysis
-- 📝 report/conference/OBS_018.docx → conference paper (short version)
+- 📝 report/conference/OBS_018.docx → conference paper (short version)  
+  Accepted for presentation at the XIV AEC Congress (2026)
 - 📈 dashboard/temperature_anomaly_dashboard.Rmd → interactive dashboard (Shiny / flexdashboard)
 - ⚙️ dashboard/precompute_dashboard.R → precomputation script for dashboard
 - 📁 data/temperature_anomaly_2025.rds → main dataset
@@ -68,10 +66,22 @@ The study combines:
 - **HadCRUT5** → global and hemispheric temperature series  
 - **AEMET** → high-resolution observational data from the Canary Islands  
 
-The HTML report included in this repository represents the **full extended version** of the study, while a shorter version was prepared for conference submission.
+The HTML report included in this repository represents the **full extended version** of the study, while a shorter version has been accepted for conference presentation.
 
 > 📄 **Full report available:**  
 > The complete analysis (methodology, diagnostics and results) is included as an HTML document in this repository.
+
+---
+
+## Conference contribution
+
+A condensed version of this work has been accepted for presentation at an academic conference:
+
+- 📝 **Conference paper:** `OBS_018.docx`  
+- 📍 **Event:** XIV Congreso de la Asociación Española de Climatología (AEC)  
+- 📅 **Year:** 2026  
+
+This conference version summarises the main findings, while the full reproducible analysis — including methodology, diagnostics and extended results — is available in the HTML report provided in this repository.
 
 ---
 
