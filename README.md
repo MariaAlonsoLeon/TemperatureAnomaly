@@ -35,7 +35,7 @@
 ## Key findings
 
 > 🌍 **Consistent warming across all regions (1970–2024)**  
-> 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere (~3.4 °C/century)**
+> 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere (~3.4 °C/century)**  
 > 📈 Linear trends provide a **robust and stable description**  
 > ⚖️ Non-linear models improve fit by **< 2% → linearity holds**  
 > 🔍 Evidence of **global acceleration vs possible regional deceleration**
