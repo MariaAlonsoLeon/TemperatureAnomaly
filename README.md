@@ -224,6 +224,7 @@ Research interests
 - Statistical inference
 
 *This repository is based on joint work with Luis Álvarez (ULPGC).*
+
 ---
 
 ### License
