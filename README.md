@@ -24,8 +24,7 @@
 
 <p align="center">
   <i>
-  Interactive dashboard preview showing dynamic exploration of temperature anomaly trends.<br>
-  An R Markdown implementation of this dashboard is included in this GitHub repository.
+  Interactive dashboard preview showing dynamic exploration of temperature anomaly trends. An R Markdown implementation of this dashboard is included in this GitHub repository.
   </i>
 </p>
 <br>
@@ -38,20 +37,20 @@
 > 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere (~3.4 °C/century)**  
 > 📈 Linear trends provide a **robust and stable description**  
 > ⚖️ Non-linear models improve fit by **< 2% → linearity holds**  
-> 🔍 Evidence of **global acceleration vs possible regional deceleration**
+> 🔍 Weak signals of **recent global warming acceleration** contrasting with regional deceleration in the Canary Islands
 
 ---
 
 ## Contents
 
-- 📊 report/temperature_anomaly_analysis.html → full report (interactive HTML, recommended reading)
+- 📊 [`report/temperature_anomaly_analysis.html`](https://mariaalonsoleon.github.io/TemperatureAnomaly/report/temperature_anomaly_analysis.html) → full report (interactive HTML, recommended reading)
 - 🧠 report/temperature_anomaly_analysis.Rmd → source code of the extended analysis
 - 📝 report/conference/OBS_018.docx → conference paper (short version)  
   Accepted for presentation at the XIV AEC Congress (2026)
 - 📈 dashboard/temperature_anomaly_dashboard.Rmd → interactive dashboard (Shiny / flexdashboard)
 - ⚙️ dashboard/precompute_dashboard.R → precomputation script for dashboard
 - 📁 data/temperature_anomaly_2025.rds → main dataset
-- 💾 `data/dashboard_results.rds` → precomputed model outputs for fast dashboard rendering
+- 💾 data/dashboard_results.rds → precomputed model outputs for fast dashboard rendering
 - ⚙️ scripts/utilities.R → shared helper functions (used in report and dashboard)
 - 📊 figures/ → figures used in README
 
