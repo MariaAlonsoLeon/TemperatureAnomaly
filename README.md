@@ -37,7 +37,8 @@
 > 🇮🇨 Canary Islands exhibit warming rates **comparable to the Northern Hemisphere (~3.4 °C/century)**  
 > 📈 Linear trends provide a **robust and stable description**  
 > ⚖️ Non-linear models improve fit by **< 2% → linearity holds**  
-> 🔍 Weak signals of **recent global warming acceleration** contrasting with regional deceleration in the Canary Islands
+> 🔍 Weak signals of **recent global warming acceleration** contrasting with regional deceleration in the Canary Islands  
+> 🌡️ Results are consistent with **high-emission climate scenarios**
 
 ---
 
@@ -136,18 +137,6 @@ All series are analysed consistently across multiple temporal resolutions.
 
 ---
 
-## Key results
-
-- All analysed regions show **statistically significant warming**
-- Canary Islands warming is **comparable to the Northern Hemisphere**
-- Linear models provide a **robust and stable representation**
-- Non-linear alternatives improve RMSE by **< 2%**
-- Global series suggest **recent acceleration**
-- Canary Islands show **possible recent deceleration**
-- Results are consistent with **high-emission climate scenarios**
-
----
-
 ## Why this matters
 
 Understanding whether regional warming follows global patterns is essential for interpreting climate change at local scales.
@@ -241,6 +230,14 @@ Research interests
 This repository is released under the **MIT License** for code.
 
 Documentation, figures, and accompanying materials are distributed under the **Creative Commons Attribution 4.0 (CC BY 4.0)** license.
+
+**You are free to:**
+- use, modify, and distribute the code
+- reuse figures and results with proper attribution
+
+**Under the following conditions:**
+- appropriate credit must be given to the authors
+- a reference to this repository should be included when possible
 
 Third-party data (e.g., AEMET, HadCRUT5) remain subject to their original licenses and are not redistributed under the terms of this repository.
 
