@@ -44,16 +44,16 @@
 
 ## Contents
 
-- 📊 [`report/temperature_anomaly_analysis.html`](https://mariaalonsoleon.github.io/TemperatureAnomaly/report/temperature_anomaly_analysis.html) → full report (interactive HTML, recommended reading)
-- 🧠 report/temperature_anomaly_analysis.Rmd → source code of the extended analysis
-- 📝 report/conference/OBS_018.docx → conference paper (short version)  
-  Accepted for presentation at the XIV AEC Congress (2026)
-- 📈 dashboard/temperature_anomaly_dashboard.Rmd → interactive dashboard (Shiny / flexdashboard)
-- ⚙️ dashboard/precompute_dashboard.R → precomputation script for dashboard
-- 📁 data/temperature_anomaly_2025.rds → main dataset
-- 💾 data/dashboard_results.rds → precomputed model outputs for fast dashboard rendering
-- ⚙️ scripts/utilities.R → shared helper functions (used in report and dashboard)
-- 📊 figures/ → figures used in README
+- 📊 [`report/temperature_anomaly_analysis.html`](https://mariaalonsoleon.github.io/TemperatureAnomaly/report/temperature_anomaly_analysis.html) → full report (interactive HTML, recommended reading)  
+- 🧠 [`report/temperature_anomaly_analysis.Rmd`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/report/temperature_anomaly_analysis.Rmd) → source code of the extended analysis  
+- 📝 [`report/conference/OBS_018.pdf`](https://mariaalonsoleon.github.io/TemperatureAnomaly/report/conference/OBS_018.pdf) → conference paper (short version)  
+  Accepted for presentation at the XIV AEC Congress (2026)  
+- 📈 [`dashboard/temperature_anomaly_dashboard.Rmd`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/dashboard/temperature_anomaly_dashboard.Rmd) → interactive dashboard (Shiny / flexdashboard)  
+- ⚙️ [`dashboard/precompute_dashboard.R`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/dashboard/precompute_dashboard.R) → precomputation script for dashboard  
+- 📁 [`data/temperature_anomaly_2025.rds`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/data/temperature_anomaly_2025.rds) → main dataset  
+- 💾 [`data/dashboard_results.rds`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/data/dashboard_results.rds) → precomputed model outputs for fast dashboard rendering  
+- ⚙️ [`scripts/utilities.R`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/scripts/utilities.R) → shared helper functions (used in report and dashboard)  
+- 📊 `figures/` → figures used in README  
 
 ---
 
@@ -77,7 +77,7 @@ The HTML report included in this repository represents the **full extended versi
 
 A condensed version of this work has been accepted for presentation at an academic conference:
 
-- 📝 **Conference paper:** `OBS_018.docx`  
+- 📝 **Conference paper:** [`OBS_018.pdf`](https://mariaalonsoleon.github.io/TemperatureAnomaly/report/conference/OBS_018.pdf)
 - 📍 **Event:** XIV Congreso de la Asociación Española de Climatología (AEC)  
 - 📅 **Year:** 2026  
 
@@ -188,7 +188,7 @@ Temperature anomalies are computed relative to the 1961–1990 baseline.
 ### Extended vs conference version
 
 - 📄 HTML report → full methodology, diagnostics, robustness analysis
-- 📝 Conference paper (OBS_018.docx) → condensed version of results
+- 📝 Conference paper (OBS_018.pdf) → condensed version of results
 
 The extended version should be considered the primary reference.
 
