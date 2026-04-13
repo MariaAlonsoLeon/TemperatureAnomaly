@@ -151,6 +151,8 @@ This study shows that:
 
 ## Reproducibility
 
+### Extended report
+
 Install dependencies:
 
 ```r
@@ -170,9 +172,51 @@ install.packages(c(
 Render the full report:
 
 ```r
-rmarkdown::render("temperature_anomaly_global_context.Rmd")
+rmarkdown::render("report/temperature_anomaly_analysis.Rmd")
 ```
 > Some `*_cache/` and `*_files/` directories may appear inside `report/` as automatically generated R Markdown rendering dependencies.
+
+### Dashboard
+
+Install dependencies:
+
+```r
+install.packages(c(
+  "shiny",
+  "flexdashboard",
+  "tidyverse",
+  "lubridate",
+  "tsibble",
+  "fpp3",
+  "purrr",
+  "zoo",
+  "ggplot2",
+  "plotly",
+  "leaflet",
+  "broom",
+  "lmtest",
+  "sandwich",
+  "trend",
+  "nortest",
+  "MASS",
+  "tseries",
+  "knitr",
+  "DT"
+))
+```
+
+Precompute dashboard results:
+
+```r
+source("dashboard/precompute_dashboard.R")
+```
+Launch the dashboard:
+
+```r
+rmarkdown::run("dashboard/temperature_anomaly_dashboard.Rmd")
+```
+
+The dashboard uses precomputed statistical outputs stored in data/dashboard_results.rds for faster rendering.
 
 ---
 
