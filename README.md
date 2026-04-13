@@ -53,7 +53,7 @@
 - 📁 [`data/temperature_anomaly_2025.rds`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/data/temperature_anomaly_2025.rds) → main dataset  
 - 💾 [`data/dashboard_results.rds`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/data/dashboard_results.rds) → precomputed model outputs for fast dashboard rendering  
 - ⚙️ [`scripts/utilities.R`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/blob/main/scripts/utilities.R) → shared helper functions (used in report and dashboard)  
-- 📊 `figures/` → figures used in README  
+- 📊 [`figures/`](https://github.com/MariaAlonsoLeon/TemperatureAnomaly/tree/main/figures) → figures used in README
 
 ---
 
